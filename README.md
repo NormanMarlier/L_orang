@@ -1,7 +1,7 @@
-# L_orang
-L'orang is a 3D-printing robotic arm made of PLA which integrates quite complex software with Arduino as controller and a Raspberry Pi as mind.
+# Lorang
+Lorang is a 3D-printing robotic arm made of PLA which integrates quite complex software with Arduino as controller and a Raspberry Pi as mind.
 
-Fun fact : The name "L'orang" comes from its long arm and the color of the original model : orange. (L'orang-outan is the french name of Orangutan)
+Fun fact : The name "Lorang" comes from its long arm and the color of the original model : orange. (L'orang-outan is the french name of Orangutan)
 
 
 
