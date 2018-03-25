@@ -35,9 +35,9 @@ typedef struct
 \* ======================================================= */
 typedef enum
 {
-    OPEN, CLOSE, GRABBING
+    OPEN=180, CLOSE=0, GRABBING=20
     
-}STATE_GRIPPER;
+}GRIPPER_STATE;
 
 
 /* ========================================================= *\
@@ -48,14 +48,14 @@ typedef enum
  * pos : Position                                            *
  * The position of the robot                                 *
  *                                                           *
- * gripper : STATE_GRIPPER                                   *
+ * gripper : GRIPPER_STATE                                   *
  * The state of the gripper                                  *
  *                                                           *
 \* ========================================================= */
 typedef struct
 {
     Position pos;
-    STATE_GRIPPER gripper;    
+    GRIPPER_STATE gripper_state;    
     
 }Robot;
 
