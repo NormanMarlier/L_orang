@@ -33,11 +33,11 @@ void loop()
   
   if (readString.length() >0) 
   {
-    //Serial.println(readString);  //so you can see the captured string 
+    Serial.println(readString);  //so you can see the captured string 
     int n = readString.toInt();  //convert readString into a number
 
     // auto select appropriate value, copied from someone elses code.
-    if(n > 360 || n < -180)
+    if(n > 180 || n < 0)
     {
       Serial.println("Too low value");
     }
