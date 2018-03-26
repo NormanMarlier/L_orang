@@ -8,10 +8,12 @@ volatile bool emergency_state = false;
 String read_string;
 
 // Servomotors of the robot
-Servo servo_1;
-Servo servo_2;
-//Servo servo_3;
-Servo gripper;
+Servo servomotors[4];
+// servo[0] : moves the main arm
+// servo[1] : moves the upper arm
+// servo[2] : moves the base
+// servo[3] : moves the gripper
+
 
 // Angle variable
 float angle = 0;
@@ -40,15 +42,15 @@ void setup()
   attachInterrupt(0, emergency_button, CHANGE);
 
   // Attach the servos and go to home pos
-  servo_1.attach(3, 1000, 2000);
-  servo_2.attach(5, 1000, 2000);
-  //servo_3.attach(7, 1000, 2000);
-  gripper.attach(8);
+  servomotors[0].attach(3, 1000, 2000);
+  servomotors[1].attach(5, 1000, 2000);
+  servomotors[2].attach(7, 1000, 2000);
+  servomotors[3].attach(8);
   
-  servo_1.write(home_pos.angle_1);
-  servo_2.write(home_pos.angle_2);
-  //servo_3.write(home_pos.angle_3);
-  gripper.write(robot.gripper_state);
+  servomotors[0].write(home_pos.angle_1);
+  servomotors[1].write(home_pos.angle_2);
+  servomotors[2].write(home_pos.angle_3);
+  servomotors[3].write(robot.gripper_state);
 
   // Wait 3s
   delay(3000);
@@ -79,11 +81,11 @@ void loop()
       {
         Serial.print("writing Angle: ");
         Serial.println(n);
-        servo_1.write(n);
-        servo_2.write(n);
+        servomotors[0].write(n);
+        servomotors[1].write(n);
         if (n > 90) robot.gripper_state = OPEN;
         else robot.gripper_state = CLOSE;
-        gripper.write(robot.gripper_state);
+        servomotors[3].write(robot.gripper_state);
         
       }
 
