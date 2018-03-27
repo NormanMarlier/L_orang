@@ -21,13 +21,12 @@ __status__ = "Prototype"
 
 
 def talker():
-    Empty msg;
     pub = rospy.Publisher('lorang', Empty, queue_size=10)
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
         rospy.loginfo('Change the state of the gripper')
-        pub.publish(msg)
+        pub.publish()
         rate.sleep()
 
 if __name__ == '__main__':
