@@ -60,7 +60,7 @@ void cmd_motors(const std_msgs::Int32MultiArray& cmd_msg)
   robot.pos.angle2 = cmd_msg.data[1];
   robot.pos.angle3 = cmd_msg.data[2];
   if (cmd_msgs.data[3] == 0) robot.gripper_state = CLOSE;
-  else if (cmd_msgs.data[3] == 180) robot.gripper_state = CLOSE;
+  else if (cmd_msgs.data[3] == 180) robot.gripper_state = OPEN;
   else robot.gripper_state = cmd_msgs.data[3];
 }
 
