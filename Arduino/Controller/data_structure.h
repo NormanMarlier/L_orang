@@ -1,5 +1,7 @@
 #ifndef data_structure_h
 #define data_structure_h
+
+
 /* ========================================================= *\
  * This structure is used to retain the angular values       *
  * of the servomotors                                        *
@@ -35,7 +37,7 @@ typedef struct
 \* ======================================================= */
 typedef enum
 {
-    OPEN=180, CLOSE=0, GRABBING=20
+    OPEN=180, CLOSE=0, GRABBING
     
 }GRIPPER_STATE;
 
