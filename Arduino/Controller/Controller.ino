@@ -9,7 +9,6 @@
  * the Rasberry Pi and the Arduino board.
 \* ======================================================== */ 
 
-
 // Packages
 #include <Servo.h>
 #include <ros.h>
@@ -19,6 +18,13 @@
 
 // ros node
 ros::NodeHandle nh;
+
+// pins
+const byte interrupt_pin = 2;
+const byte servo_0_pin = 3;
+const byte servo_1_pin = 5;
+const byte servo_2_pin = 7;
+const byte servo_3_pin = 8;
 
 // Volatile variables
 volatile bool emergency_state = false; 
@@ -41,7 +47,6 @@ Robot robot = {home_pos, CLOSE};
 
 /* 
  *  Interrupt routine    
- *
  */
 void emergency_button()
 {
@@ -55,24 +60,23 @@ void cmd_motors(const std_msgs::Empty& toogle_msg)
   else robot.gripper_state = CLOSE;
 }
 
-
 // Ros subscriber
 ros::Subscriber<std_msgs::Empty> sub("lorang", &cmd_motors);
 
 void setup() 
 {
   // Interrupt routine
-  attachInterrupt(0, emergency_button, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(interrupt_pin), emergency_button, CHANGE);
 
   // Init ROS
   nh.initNode();
   nh.subscribe(sub);
   
   // Attach the servos and go to home pos
-  servomotors[0].attach(3, 1000, 2000);
-  servomotors[1].attach(5, 1000, 2000);
-  //servomotors[2].attach(7, 1000, 2000);
-  servomotors[3].attach(8);
+  servomotors[0].attach(servo_0_pin, 1000, 2000);
+  servomotors[1].attach(servo_1_pin, 1000, 2000);
+  //servomotors[2].attach(servo_2_pin, 1000, 2000);
+  servomotors[3].attach(servo_3_pin);
   
   servomotors[0].write(home_pos.angle_1);
   servomotors[1].write(home_pos.angle_2);
