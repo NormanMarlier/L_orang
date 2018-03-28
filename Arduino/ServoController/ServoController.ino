@@ -1,5 +1,9 @@
 #include <Servo.h>
 
+
+// pins
+const byte servo_pin = 2;
+
 // Stream buffer
 String readString;
 
@@ -15,8 +19,8 @@ void setup()
   // Initialize the serial link
   Serial.begin(9600);
 
-  // Attahc the gripper
-  servomotor.attach(2, 1000, 2000);
+  // Attahc the servo
+  servomotor.attach(servo_pin, 1000, 2000);
 }
 
 void loop() 
@@ -39,7 +43,7 @@ void loop()
     // auto select appropriate value, copied from someone elses code.
     if(n > 180 || n < 0)
     {
-      Serial.println("Too low value");
+      Serial.println("Not good value");
     }
     else
     {   
