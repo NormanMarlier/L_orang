@@ -13,7 +13,7 @@
 // Packages
 #include <Servo.h>
 #include <ros.h>
-#include <std_msgs/Empty.h>
+#include <std_msgs/Int32MultiArray.h>
 #include "data_structure.h"
 
 
@@ -48,11 +48,15 @@ void emergency_button()
   emergency_state = !emergency_state;
 }
 
-void cmd_motors(const std_msgs::Empty& toogle_msg)
+void cmd_motors(const std_msgs::Int32MultiArray& cmd_msg)
 {
-  // Change the state of the gripper
-  if (robot.gripper_state == CLOSE) robot.gripper_state = OPEN;
-  else robot.gripper_state = CLOSE;
+  // Change the state of the motors
+  robot.pos.angle1 = cmd_msg.data[0];
+  robot.pos.angle2 = cmd_msg.data[1];
+  robot.pos.angle3 = cmd_msg.data[2];
+  if (cmd_msgs.data[3] == 0) robot.gripper_state = CLOSE;
+  else if (cmd_msgs.data[3] == 180) robot.gripper_state = CLOSE;
+  else robot.gripper_state = cmd_msgs.data[3];
 }
 
 
@@ -71,12 +75,12 @@ void setup()
   // Attach the servos and go to home pos
   servomotors[0].attach(3, 1000, 2000);
   servomotors[1].attach(5, 1000, 2000);
-  //servomotors[2].attach(7, 1000, 2000);
+  servomotors[2].attach(7, 1000, 2000);
   servomotors[3].attach(8);
   
   servomotors[0].write(home_pos.angle_1);
   servomotors[1].write(home_pos.angle_2);
-  //servomotors[2].write(home_pos.angle_3);
+  servomotors[2].write(home_pos.angle_3);
   servomotors[3].write(robot.gripper_state);
 
   // Wait 3s
@@ -85,8 +89,14 @@ void setup()
 
 void loop() 
 {
-  // Update the gripper state
-  if (!emergency_state) servomotors[3].write(robot.gripper_state);
+  // Update the motors state
+  if (!emergency_state)
+  {
+    servomotors[0].write(robot.pos.angle1);
+    servomotors[1].write(robot.pos.angle2);
+    servomotors[2].write(robot.pos.angle3);
+    servomotors[3].write(robot.gripper_state);
+  }
   
   // Callback for ROS
   nh.spinOnce();
