@@ -17,18 +17,18 @@ from keras import optimizers
 from sklearn.metrics import accuracy_score
 
 
-def build_model(height, width, n_classes):
+def build_model(height_, width_, n_classes_):
     """
 
-    :param height:
-    :param width:
-    :param n_classes:
+    :param height_:
+    :param width_:
+    :param n_classes_:
     :return:
     """
     # ...
-    input = Input(shape=[height, width, 1])
+    input_layer = Input(shape=[height_, width_, 1])
     # layer 1
-    x = Conv2D(32, kernel_size=3, padding="same", activation="relu")(input)
+    x = Conv2D(32, kernel_size=3, padding="same", activation="relu")(input_layer)
     # layer 2
     x = Conv2D(32, kernel_size=3, padding="same", activation="relu")(x)
     x = MaxPooling2D(pool_size=2, strides=2, padding="same")(x)
@@ -39,28 +39,28 @@ def build_model(height, width, n_classes):
     x = Flatten()(x)
     x = Dense(32, activation="relu")(x)
     x = Dense(16, activation="relu")(x)
-    x = Dense(n_classes, activation="softmax")(x)
-    model = Model(inputs=[input], outputs=[x])
+    x = Dense(n_classes_, activation="softmax")(x)
+    model_ = Model(inputs=[input_layer], outputs=[x])
 
-    return model
+    return model_
 
 
-def train(model, x_train, y_train, epochs=25, learning_rate=5e-2, batch_size=128):
+def train(model_, x_train_, y_train_, epochs_=25, learning_rate_=5e-2, batch_size_=128):
     """
 
-    :param model:
-    :param x_train:
-    :param y_train:
-    :param epochs:
-    :param learning_rate:
-    :param batch_size:
+    :param model_:
+    :param x_train_:
+    :param y_train_:
+    :param epochs_:
+    :param learning_rate_:
+    :param batch_size_:
     :return:
     """
 
-    model.compile(optimizer=optimizers.sgd(lr=learning_rate), loss="categorical_crossentropy", metrics=["accuracy"])
+    model_.compile(optimizer=optimizers.sgd(lr=learning_rate_), loss="categorical_crossentropy", metrics=["accuracy"])
 
     # train
-    model.fit(x=x_train, y=y_train, batch_size=batch_size, epochs=epochs)
+    model_.fit(x=x_train_, y=y_train_, batch_size=batch_size_, epochs=epochs_)
 
 
 if __name__ == '__main__':
@@ -77,10 +77,10 @@ if __name__ == '__main__':
     y_test = 0
 
     # Get the model
-    model = build_model(height=height, width=width, n_classes=n_classes)
+    model = build_model(height_=height, width_=width, n_classes_=n_classes)
 
     # Train
-    train(model, x_train, y_train, batch_size=batch_size)
+    train(model, x_train, y_train, batch_size_=batch_size)
 
     # Predict
     y_pred = model.predict(x_test, batch_size=batch_size)
