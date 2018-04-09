@@ -36,9 +36,6 @@ Servo servomotors[4];
 // servo[2] : moves the upper arm
 // servo[3] : moves the gripper
 
-// Angle variable
-float angle = 0;
-
 // Home position
 Position home_pos = {0, 90, 0, CLOSE};
 
