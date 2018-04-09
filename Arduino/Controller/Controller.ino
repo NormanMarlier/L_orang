@@ -40,7 +40,7 @@ Servo servomotors[4];
 float angle = 0;
 
 // Home position
-Position home_pos = {0, 90, 0};
+Position home_pos = {0, 90, 0, CLOSE};
 
 // Robot structure
 Robot robot = {home_pos, CLOSE};
@@ -56,21 +56,33 @@ void emergency_button()
 void cmd_motors(const std_msgs::Int32MultiArray& cmd_msg)
 {
   // Change the state of the motors
-  robot.pos.angle1 = cmd_msg.data[0];
-  robot.pos.angle2 = cmd_msg.data[1];
-  robot.pos.angle3 = cmd_msg.data[2];
-  if (cmd_msgs.data[3] == 0) robot.gripper_state = CLOSE;
-  else if (cmd_msgs.data[3] == 180) robot.gripper_state = OPEN;
-  else robot.gripper_state = cmd_msgs.data[3];
+  robot.pos.angle_1 = cmd_msg.data[0];
+  robot.pos.angle_2 = cmd_msg.data[1];
+  robot.pos.angle_3 = cmd_msg.data[2];
+  if (cmd_msg.data[3] == 0)
+  {
+    robot.pos.angle_4 = cmd_msg.data[3];
+    robot.gripper_state = CLOSE;
+  }
+  else if (cmd_msg.data[3] == 180)
+ {
+   robot.pos.angle_4 = cmd_msg.data[3];
+   robot.gripper_state = OPEN;
+ }
+  else
+  {
+    robot.pos.angle_4 = cmd_msg.data[3];
+    robot.gripper_state = GRABBING;
+  }
 }
 
 // Ros subscriber
-ros::Subscriber<std_msgs::Empty> sub("lorang", &cmd_motors);
+ros::Subscriber<std_msgs::Int32MultiArray> sub("lorang", &cmd_motors);
 
 void setup() 
-{
+{shut
   // Interrupt routine
-  attachInterrupt(digitalPinToInterrupt(interrupt_pin), emergency_button, CHANGE);
+  attachInterrupt(0, emergency_button, RISING);
 
   // Init ROS
   nh.initNode();
@@ -96,10 +108,10 @@ void loop()
   // Update the motors state
   if (!emergency_state)
   {
-    servomotors[0].write(robot.pos.angle1);
-    servomotors[1].write(robot.pos.angle2);
-    servomotors[2].write(robot.pos.angle3);
-    servomotors[3].write(robot.gripper_state);
+    servomotors[0].write(robot.pos.angle_1);
+    servomotors[1].write(robot.pos.angle_2);
+    servomotors[2].write(robot.pos.angle_3);
+    servomotors[3].write(robot.pos.angle_4);
   }
   
   // Callback for ROS

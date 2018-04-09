@@ -7,21 +7,25 @@
  * of the servomotors                                        *
  *                                                           *
  * FIELDS :                                                  *
- * angle_1 : float                                           *
+ * angle_1 : int                                             *
  * The value of the angle of the servo_1                     *
  *                                                           *
- * angle_2 : float                                           *
+ * angle_2 : int                                             *
  * The value of the angle of the servo_2                     *
  *                                                           *
- * angle_3 : float                                           *
+ * angle_3 : int                                             *
  * The value of the angle of the servo_3                     *
+ *                                                           *
+ * angle_4 : int                                             *
+ * The value of the angle of the servo_4                     *
  *                                                           *
 \* ========================================================= */
 typedef struct
 {
-    float angle_1;
-    float angle_2;
-    float angle_3;
+    int angle_1;
+    int angle_2;
+    int angle_3;
+    int angle_4;
     
 }Position;
 
