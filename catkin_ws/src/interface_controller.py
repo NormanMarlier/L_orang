@@ -8,7 +8,7 @@ docstring
 
 # Import module
 import rospy
-from std_msgs.msg import Empty
+from std_msgs.msg import Int32MultiArray
 
 
 # Meta data
@@ -21,12 +21,18 @@ __status__ = "Prototype"
 
 
 def talker():
-    pub = rospy.Publisher('lorang', Empty, queue_size=10)
+    pub = rospy.Publisher('lorang', Int32MultiArray, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(0.5) # 10hz
+    rate = rospy.Rate(1) # 1hz
+    angle1 = 90
+    angle2 = 80
+    angle3 = 60
+    gripper = 0
     while not rospy.is_shutdown():
+		cmd_motors = Int32MultiArray();
+		cmd_motors.data = [angle1, angle2, angle3, gripper]
         rospy.loginfo('Change the state of the gripper')
-        pub.publish()
+        pub.publish(cmd_motors)
         rate.sleep()
 
 if __name__ == '__main__':
