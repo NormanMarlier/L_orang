@@ -14,6 +14,7 @@ from keras.layers import MaxPooling2D
 from keras.layers import Flatten
 from keras.layers import Dense
 from keras import optimizers
+from keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import accuracy_score
 
 

@@ -7,6 +7,23 @@ from matplotlib import pyplot as plt
 L1 = 1
 L2 = 1
 L3 = 1
+THETA1_INF_DEGREE = -10
+THETA1_SUP_DEGREE = 120
+THETA1_INF = math.radians(THETA1_INF_DEGREE)
+THETA1_SUP = math.radians(THETA1_SUP_DEGREE)
+
+
+def check_angle(angular_pose):
+    """
+    Check if the angular pose exists
+    :param angular_pose: The wanted angular position (3 dof) (list)
+    :return: true if ok
+             false if not
+    """
+    if angular_pose[1] > THETA1_SUP or angular_pose[1] < THETA1_INF:
+        return False
+
+    return True
 
 
 def fkine(angular_pose):
@@ -15,7 +32,12 @@ def fkine(angular_pose):
 
     :param angular_pose: The wanted angular position (3 dof) (list)
     :return: the cartesian position related to the angular pose
+             Raise ValueError if the angular_pose is not ok
     """
+    # Check the angular pose
+    if not check_angle(angular_pose):
+        raise ValueError
+
     # Compute the cartesian coordinates
     x = math.cos(angular_pose[0]) * (L2 * math.cos(angular_pose[1]) + L3 * math.cos(angular_pose[2]))
     y = math.sin(angular_pose[0]) * (L2 * math.cos(angular_pose[1]) + L3 * math.cos(angular_pose[2]))
@@ -55,6 +77,12 @@ def ikine(cartesian_pose, config=True):
     theta_2_1 = math.atan2(2 * t_alpha_1 / (1 + pow(t_alpha_1, 2)), (1 - pow(t_alpha_1, 2)) / (1 + pow(t_alpha_1, 2)))
     theta_2_2 = math.atan2(2 * t_alpha_2 / (1 + pow(t_alpha_2, 2)), (1 - pow(t_alpha_2, 2)) / (1 + pow(t_alpha_2, 2)))
 
+    # Check the angular poses
+    if not check_angle([theta_1, theta_2_1, beta_1]):
+        raise ValueError
+    if not check_angle([theta_1, theta_2_2, beta_2]):
+        raise ValueError
+
     if config:
         return theta_1, theta_2_1, beta_1
 
@@ -71,7 +99,7 @@ def polynome(A, B, C, D, E, F, time_step):
     return [a+b+c+d+e+f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
 
 
-def polynomial_trajectory(initial, final, number_point):
+def joint_trajectory(initial, final, number_point):
     """
 
     :param initial:
@@ -88,11 +116,10 @@ def polynomial_trajectory(initial, final, number_point):
 
     for i in range(number_point):
         trajectory.append(polynome(A, B, C, [0, 0, 0], [0, 0, 0], initial, i))
-        print('poly', polynome(A, B, C, [0, 0, 0], [0, 0, 0], initial, i))
 
     return trajectory
 
-traj = polynomial_trajectory([0.3, 0.4, 0.3], [0.5, 0.5, 0.4], 30)
+traj = joint_trajectory([0.3, 0.4, 0.3], [0.3, 0.5, 0.4], 30)
 plt.plot(range(30), traj)
 plt.show()
 
