@@ -1,13 +1,13 @@
-/* ======================================================== *\
- * author : Norman Marlier
- * license : MIT
- * maintainer : Norman Marlier
- * email : norman.marlier@gmail.com
- * status : test
- * 
- * This code is to test ROS connection throw
- * the Rasberry Pi and the Arduino board.
-\* ======================================================== */ 
+// ======================================================== 
+// author : Norman Marlier
+// license : MIT
+// maintainer : Norman Marlier
+// email : norman.marlier@gmail.com
+// status : production
+// 
+// This code is to test ROS connection throw
+// the Rasberry Pi and the Arduino board.
+// ========================================================  
 
 // Packages
 #include <Servo.h>
@@ -44,10 +44,8 @@ Position home_pos = {0, 90, 0};
 
 // Robot structure
 Robot robot = {home_pos, CLOSE};
-
-/* 
- *  Interrupt routine    
- */
+ 
+// Interrupt routine    
 void emergency_button()
 {
   emergency_state = !emergency_state;
