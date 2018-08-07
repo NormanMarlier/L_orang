@@ -1,1 +1,3 @@
 Arduino/ServoController/.DS_Store
+.idea/*
+catkin_ws/data/*
