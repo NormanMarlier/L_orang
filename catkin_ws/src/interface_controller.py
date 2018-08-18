@@ -8,8 +8,9 @@ docstring
 
 # Import module
 import rospy
-from std_msgs.msg import Int32MultiArray
-
+import math
+from std_msgs.msg import Float32MultiArray
+from kinematic_robot import joint_trajectory
 
 # Meta data
 __author__ = 'Norman Marlier'
@@ -21,18 +22,23 @@ __status__ = "Prototype"
 
 
 def talker():
-    pub = rospy.Publisher('lorang', Int32MultiArray, queue_size=10)
+    pub = rospy.Publisher('lorang', Float32MultiArray, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(1) # 1hz
-    angle1 = 90
-    angle2 = 80
-    angle3 = 60
+    rate = rospy.Rate(15) # 15hz
+    #  Compute a trajectory
+    traj = joint_trajectory([0, math.radians(-10), 0], [0, math.radians(140), 0], 100)
     gripper = 0
+    k = 0
     while not rospy.is_shutdown():
-		cmd_motors = Int32MultiArray();
-		cmd_motors.data = [angle1, angle2, angle3, gripper]
-        rospy.loginfo('Change the state of the gripper')
+	cmd_motors = Float32MultiArray();
+	cmd_motors.data = [traj[k][0], math.degrees(traj[k][1]), traj[k][2], gripper]
+        print(math.degrees(traj[k][1]))
         pub.publish(cmd_motors)
+        gripper = 1 - gripper
+        k += 1
+        if k == 100:
+            k = 0
+        print('k =', k)
         rate.sleep()
 
 if __name__ == '__main__':
