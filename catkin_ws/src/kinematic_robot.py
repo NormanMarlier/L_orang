@@ -119,8 +119,9 @@ def joint_trajectory(initial, final, number_point):
 
     return trajectory
 
-traj = joint_trajectory([0.3, 0.4, 0.3], [0.3, 0.5, 0.4], 30)
-plt.plot(range(30), traj)
-plt.show()
+if __name__ == '__main__':
+	traj = joint_trajectory([0.3, 0.4, 0.3], [0.3, 0.5, 0.4], 30)
+	plt.plot(range(30), traj)
+	plt.show()
 
 
