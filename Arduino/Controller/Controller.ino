@@ -1,18 +1,18 @@
-// ======================================================== 
-// author : Norman Marlier
-// license : MIT
-// maintainer : Norman Marlier
-// email : norman.marlier@gmail.com
-// status : production
-// 
-// This code is to test ROS connection throw
-// the Rasberry Pi and the Arduino board.
-// ========================================================  
+/* ======================================================== *\
+ * author : Norman Marlier
+ * license : MIT
+ * maintainer : Norman Marlier
+ * email : norman.marlier@gmail.com
+ * status : test
+ * 
+ * This code is to test ROS connection throw
+ * the Rasberry Pi and the Arduino board.
+\* ======================================================== */ 
 
 // Packages
 #include <Servo.h>
 #include <ros.h>
-#include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 #include "data_structure.h"
 
 
@@ -41,14 +41,16 @@ Position home_pos = {0, 90, 0, CLOSE};
 
 // Robot structure
 Robot robot = {home_pos, CLOSE};
- 
-// Interrupt routine    
+
+/* 
+ *  Interrupt routine    
+ */
 void emergency_button()
 {
   emergency_state = !emergency_state;
 }
 
-void cmd_motors(const std_msgs::Int32MultiArray& cmd_msg)
+void cmd_motors(const std_msgs::Float32MultiArray& cmd_msg)
 {
   // Change the state of the motors
   robot.pos.angle_1 = cmd_msg.data[0];
@@ -72,10 +74,10 @@ void cmd_motors(const std_msgs::Int32MultiArray& cmd_msg)
 }
 
 // Ros subscriber
-ros::Subscriber<std_msgs::Int32MultiArray> sub("lorang", &cmd_motors);
+ros::Subscriber<std_msgs::Float32MultiArray> sub("lorang", &cmd_motors);
 
 void setup() 
-{shut
+{
   // Interrupt routine
   attachInterrupt(0, emergency_button, RISING);
 
