@@ -19,9 +19,9 @@ Communication between the Raspberry Pi board and the Arduino board is done by us
 # Result
 Some images of my beautiful robot, Lorang
 
-![Lorang_1](../master/Lorang_1.png)
+![Lorang_1](../master/Lorang_1.jpg)
 
-![Lorang_2](../master/Lorang_2.png)
+![Lorang_2](../master/Lorang_2.jpg)
 
 
 
