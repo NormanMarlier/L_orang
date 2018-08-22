@@ -6,10 +6,22 @@ Fun fact : The name "Lorang" comes from its long arm and the color of the origin
 
 
 # Hardware
-The mechanical structure is made by following these instructions 
-It uses :
-- One Arduino Uno
-- A Raspberry pi 3
-- A raspicam v2
+The mechanical structure is made by following these instructions [EEzyBotARM](https://www.thingiverse.com/thing:1454048). You can find the motors used for moving the arm.
+
+I add hardware in order to control the robotic arm and interact with the environment :
+- Arduino UNO board. It controls the motors and the emergency stop
+- Raspberry Pi 3 which interacts with the world. It provides services such as inverse kinematic solver, joint trajectory, object recognition, ...
+- A raspberry pi camera v2
+
+# Software
+Communication between the Raspberry Pi board and the Arduino board is done by using the middleware [ROS Kinetic](http://www.ros.org/).
+
+# Result
+Some images of my beautiful robot, Lorang
+
+![Lorang_1](Lorang_1.png)
+
+![Lorang_2](Lorang_2.png)
+
 
 
