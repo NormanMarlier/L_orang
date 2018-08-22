@@ -12,7 +12,7 @@
 // Packages
 #include <Servo.h>
 #include <ros.h>
-#include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 #include "data_structure.h"
 
 
@@ -51,7 +51,7 @@ void emergency_button()
   emergency_state = !emergency_state;
 }
 
-void cmd_motors(const std_msgs::Int32MultiArray& cmd_msg)
+void cmd_motors(const std_msgs::Float32MultiArray& cmd_msg)
 {
   // Change the state of the motors
   robot.pos.angle1 = cmd_msg.data[0];
