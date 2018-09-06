@@ -3,10 +3,10 @@ from matplotlib import pyplot as plt
 
 
 # This class represents a kinematic solver (no dynamic equations)
-# This solver is based on geometrical features as the distances between
+# This solver is based on geometrical features such as the distances between
 # two joints.
 # It can be used only for 3 DOF mechanical systems as robotic arms
-# with a configuration RRR
+# with a RRR configuration
 
 # Lorang - born_2 (-10, 120)
 
