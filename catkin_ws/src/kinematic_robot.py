@@ -17,13 +17,20 @@ class KinematicSolver(object):
         """
         Constructor for the class
 
-        :param l1: distance between the ground of the base and the first joint
-        :param l2: distance between the first joint and the second joint
-        :param l3: distance between the second joint and the end-effector
+        l1 > 0 | l2 > 0 | l3 > 0
+
+        :param l1: (>= 0) distance between the ground of the base and the first joint
+        :param l2: (>= 0) distance between the first joint and the second joint
+        :param l3: (>= 0) distance between the second joint and the end-effector
         :param born_1: (tuple) min and max angle for the first joint in rad
         :param born_2: (tuple) min and max angle for the second joint in rad
         :param born_3: (tuple) min and max angle for the third joint in rad
         """
+        if l1 < 0 or l2 < 0 or l3 < 0:
+            raise ValueError('a joint distance is negative')
+        if (l1 == 0) & (l2 == 0) & (l3 == 0):
+            raise ValueError('the joint distances are equal to 0')
+
         self._L1 = l1
         self._L2 = l2
         self._L3 = l3
@@ -113,12 +120,23 @@ class KinematicSolver(object):
             return theta_1, theta_2_2, beta_2
 
     @staticmethod
-    def polynome(A, B, C, D, E, F, time_step):
-        A = [x * pow(time_step, 5) for x in A]
-        B = [x * pow(time_step, 4) for x in B]
-        C = [x * pow(time_step, 3) for x in C]
-        D = [x * pow(time_step, 2) for x in D]
-        E = [x * pow(time_step, 1) for x in E]
+    def polynome(A, B, C, D, E, F, eval_pt):
+        """
+        Return a fifth degree polynome
+        :param A: coeff for 5 degree
+        :param B: coeff for 4 degree
+        :param C: coeff for 3 degree
+        :param D: coeff for 2 degree
+        :param E: coeff for 1 degree
+        :param F: constante
+        :param eval_pt: the value where the polynome is evaluated
+        :return: A*(eval_pt)^5 + B*(eval_pt)^4 + C*(eval_pt)^3 + D*(eval_pt)^2 + E*(eval_pt) + F
+        """
+        A = [x * pow(eval_pt, 5) for x in A]
+        B = [x * pow(eval_pt, 4) for x in B]
+        C = [x * pow(eval_pt, 3) for x in C]
+        D = [x * pow(eval_pt, 2) for x in D]
+        E = [x * pow(eval_pt, 1) for x in E]
         return [a+b+c+d+e+f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
 
     def joint_trajectory(self, initial, final, number_point):
