@@ -8,22 +8,21 @@ docstring
 
 # Import module
 import rospy
-f
-
 
 # Meta data
 __author__ = 'Norman Marlier'
 __copyright__ = 'Copyright 2018'
 __credits__ = ['Norman Marlier']
 __maintainer__ = "Norman Marlier"
-__email__ = "norman.marlier@student.uliege.be"
+__email__ = "norman.marlier@uliege.be"
 __status__ = "Prototype"
 
 
 def talker():
     pub = rospy.Publisher('lorang', Empty, queue_size=10)
     rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(0.5) # 10hz
+    rate = rospy.Rate(10)  # 10hz
+
     while not rospy.is_shutdown():
         rospy.loginfo('Change the state of the gripper')
         pub.publish()
