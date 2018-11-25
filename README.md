@@ -12,7 +12,7 @@ I add hardware in order to control the robotic arm and interact with the environ
 * Raspberry Pi 3 which interacts with the world. It provides services such as inverse kinematic solver, joint trajectory, object recognition, ...
 * A raspberry pi camera v2  
 
--[] Power supply for the servomotors   
+-[ ] Power supply for the servomotors   
 
 # Software
 Communication between the Raspberry Pi board and the Arduino board is done by using the middleware [ROS Kinetic](http://www.ros.org/).
