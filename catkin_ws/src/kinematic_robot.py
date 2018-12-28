@@ -2,9 +2,6 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
-from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, BoundaryNorm
-
 
 # This class represents a kinematic solver (no dynamic equations)
 # This solver is based on geometrical features such as the distances between
@@ -210,7 +207,10 @@ class KinematicSolver(object):
         :param traj: a valid trajectory (list of 3D lists)
         :return: show the angles
         """
-        plt.plot(range(len(traj)), traj)
+        trajectory = np.array(traj)
+        for i in range(0, np.shape(traj)[1]):
+            plt.plot(range(len(traj)), trajectory[:, i], label=["$\theta_{0}$".format(i)])
+        plt.legend(shadow=True)
         plt.show()
 
     def animate_trajectory(self, traj, record=False, file_name='animation.mp4'):
@@ -224,8 +224,7 @@ class KinematicSolver(object):
         # ------------------------------------------------------------
         # set up figure and animation
         fig = plt.figure()
-        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-                             xlim=(-3, 3), ylim=(-3, 3))
+        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False, xlim=(-3, 3), ylim=(-3, 3))
         ax.grid()
 
         line1, = ax.plot([], [], '-o', lw=2)
@@ -280,7 +279,7 @@ if __name__ == '__main__':
     print('Final configuration - cartesian ', end_pose_cart)
 
     # Show a joint trajectory
-    traj = kine_solver.joint_trajectory(init_pose_angle, end_pose_angle, 100)
+    traj = kine_solver.linear_trajectory(init_pose_cart, end_pose_cart, 100)
     kine_solver.show_angle(traj)
     kine_solver.animate_trajectory(traj)
 
