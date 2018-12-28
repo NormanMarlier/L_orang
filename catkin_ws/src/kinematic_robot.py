@@ -2,6 +2,9 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
+
 
 # This class represents a kinematic solver (no dynamic equations)
 # This solver is based on geometrical features such as the distances between
@@ -201,19 +204,21 @@ class KinematicSolver(object):
         return trajectory
 
     @staticmethod
-    def show_trajectory(traj):
+    def show_angle(traj):
         """
 
         :param traj: a valid trajectory (list of 3D lists)
-        :return: show the trajectory
+        :return: show the angles
         """
         plt.plot(range(len(traj)), traj)
         plt.show()
 
-    def animate_trajectory(self, traj):
+    def animate_trajectory(self, traj, record=False, file_name='animation.mp4'):
         """
 
         :param traj: A valid trajectory
+        :param record: True if the animation is recorded. False (by default) otherwise
+        :param file_name:
         :return:
         """
         # ------------------------------------------------------------
@@ -223,31 +228,39 @@ class KinematicSolver(object):
                              xlim=(-3, 3), ylim=(-3, 3))
         ax.grid()
 
-        line, = ax.plot([], [], lw=2)
+        line1, = ax.plot([], [], '-o', lw=2)
+        line2, = ax.plot([], [], 'r-', lw=2)
+        x_traj = []
+        y_traj = []
         plt.plot()
 
         def init():
             """initialize animation"""
-            line.set_data([], [])
-            return line,
+            line1.set_data([], [])
+            line2.set_data([], [])
+            return line1, line2,
 
         def animate(i):
             """perform animation step"""
             # X coordinate for the two articulations
             thisx = [0, self._L2 * math.cos(traj[i][1]), self._L2 * math.cos(traj[i][1]) + self._L3 * math.cos(traj[i][2])]
             thisz = [self._L1, self._L1 + self._L2 * math.sin(traj[i][1]), self._L1 + self._L2 * math.sin(traj[i][1]) + self._L3 * math.sin(traj[i][2])]
-            line.set_data(thisx, thisz)
-            return line,
+            line1.set_data(thisx, thisz)
+            x_traj.append(thisx[2])
+            y_traj.append(thisz[2])
+            line2.set_data(x_traj, y_traj)
+            return line1, line2,
 
         ani = animation.FuncAnimation(fig, animate, np.arange(1, len(traj)),
-                                      interval=10, blit=False, init_func=init, repeat=False)
+                                      interval=10, blit=True, init_func=init, repeat=False)
 
         # save the animation as an mp4.  This requires ffmpeg or mencoder to be
         # installed.  The extra_args ensure that the x264 codec is used, so that
         # the video can be embedded in html5.  You may need to adjust this for
         # your system: for more information, see
         # http://matplotlib.sourceforge.net/api/animation_api.html
-        ani.save('test_save_cart.mp4', fps=30, extra_args=['-vcodec', 'libx264'])
+        if record:
+            ani.save(file_name, fps=30, extra_args=['-vcodec', 'libx264'])
 
         plt.show()
 
@@ -258,16 +271,18 @@ if __name__ == '__main__':
 
     # Show an inverse calculation
     init_pose_angle = [0, math.pi/4, 0]
-    print('Initial configuration - angle ', init_pose_angle[0], ', ', init_pose_angle[1], ', ', init_pose_angle[2])
+    print('Initial configuration - angle ', init_pose_angle)
     init_pose_cart = kine_solver.fkine(init_pose_angle)
-    print('Initial configuration - cartesian ', init_pose_cart[0], ', ', init_pose_cart[1], ', ', init_pose_cart[2])
-    end_pose_angle = [0, math.pi/6, math.pi/4]
-    print('Finial configuration - angle ', end_pose_angle[0], ', ', end_pose_angle[1], ', ', end_pose_angle[2])
+    print('Initial configuration - cartesian ', init_pose_cart)
+    end_pose_angle = [0, math.pi/4, math.pi/4]
+    print('Final configuration - angle ', end_pose_angle)
     end_pose_cart = kine_solver.fkine(end_pose_angle)
-    print('Finial configuration - cartesian ', end_pose_cart[0], ', ', end_pose_cart[1], ', ', end_pose_cart[2])
+    print('Final configuration - cartesian ', end_pose_cart)
 
     # Show a joint trajectory
-    traj = kine_solver.linear_trajectory(init_pose_cart, end_pose_cart, 100)
+    traj = kine_solver.joint_trajectory(init_pose_angle, end_pose_angle, 100)
+    kine_solver.show_angle(traj)
     kine_solver.animate_trajectory(traj)
+
 
 
