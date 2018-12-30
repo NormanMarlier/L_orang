@@ -2,6 +2,7 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
+import mpl_toolkits.mplot3d.axes3d as p3
 
 # This class represents a kinematic solver (no dynamic equations)
 # This solver is based on geometrical features such as the distances between
@@ -118,14 +119,25 @@ class KinematicSolver(object):
         plt.legend(shadow=True)
         plt.show()
 
-    def animate_trajectory(self, traj, record=False, file_name='animation.mp4'):
+    def animate_2d_trajectory(self, traj, record=False, file_name='2d_animation.mp4'):
         """
 
         :param traj: A valid trajectory
         :param record: True if the animation is recorded. False (by default) otherwise
         :param file_name:
-        :return:
+        :return: an animation of the trajectory in 2D (x-z plane)
         """
+
+    def animate_3d_trajectory(self, traj, record=False, file_name='3d_animation.mp4'):
+        """
+        Animate a 3D trajectory and can save it into mp4 file
+
+        :param traj: A valid trajectory
+        :param record: True if the animation is recorded. False (by default) otherwise
+        :param file_name:
+        :return: an animation of the trajectory in 3D
+        """
+
 
 class RRRSolver(KinematicSolver):
 
@@ -149,9 +161,9 @@ class RRRSolver(KinematicSolver):
 
         super(RRRSolver, self).__init__()
 
-        self._L1 = l1
-        self._L2 = l2
-        self._L3 = l3
+        self.__L1 = l1
+        self.__L2 = l2
+        self.__L3 = l3
         self.born_1_min = born_1[0]
         self.born_1_max = born_1[1]
         self.born_2_min = born_2[0]
@@ -188,9 +200,9 @@ class RRRSolver(KinematicSolver):
             raise ValueError
 
         # Compute the cartesian coordinates
-        x = math.cos(angular_pose[0]) * (self._L2 * math.cos(angular_pose[1]) + self._L3 * math.cos(angular_pose[2]))
-        y = math.sin(angular_pose[0]) * (self._L2 * math.cos(angular_pose[1]) + self._L3 * math.cos(angular_pose[2]))
-        z = self._L1 + self._L2 * math.sin(angular_pose[1]) + self._L3 * math.sin(angular_pose[2])
+        x = math.cos(angular_pose[0]) * (self.__L2 * math.cos(angular_pose[1]) + self.__L3 * math.cos(angular_pose[2]))
+        y = math.sin(angular_pose[0]) * (self.__L2 * math.cos(angular_pose[1]) + self.__L3 * math.cos(angular_pose[2]))
+        z = self.__L1 + self.__L2 * math.sin(angular_pose[1]) + self.__L3 * math.sin(angular_pose[2])
 
         return x, y, z
 
@@ -210,9 +222,9 @@ class RRRSolver(KinematicSolver):
 
         # Intermediate variables
         A = math.sqrt(pow(cartesian_pose[0], 2) + pow(cartesian_pose[1], 2))
-        B = cartesian_pose[2] - self._L1
-        a = self._L2
-        b = self._L3
+        B = cartesian_pose[2] - self.__L1
+        a = self.__L2
+        b = self.__L3
         c_alpha = (pow(A, 2) + pow(B, 2) - pow(b, 2) + pow(a, 2)) / (2 * a)
         t_alpha_1 = (B + math.sqrt(pow(A, 2) + pow(B, 2) - pow(c_alpha, 2))) / (A + c_alpha)
         t_alpha_2 = (B - math.sqrt(pow(A, 2) + pow(B, 2) - pow(c_alpha, 2))) / (A + c_alpha)
@@ -255,7 +267,7 @@ class RRRSolver(KinematicSolver):
         C = [x * pow(eval_pt, 3) for x in C]
         D = [x * pow(eval_pt, 2) for x in D]
         E = [x * pow(eval_pt, 1) for x in E]
-        return [a+b+c+d+e+f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
+        return [a + b + c + d + e + f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
 
     def __start_to_end_joint_trajectory(self, initial, final, number_point):
         """
@@ -264,7 +276,6 @@ class RRRSolver(KinematicSolver):
         :param initial: Initial joint pose (must be valid)
         :param final: Final joint pose (must be valid)
         :param number_point: The number of points for the trajectory
-        :param points: Intermediate points (empty list by default)
         :return: A joint trajectory
         """
         # Check the initial and the final pose
@@ -293,7 +304,6 @@ class RRRSolver(KinematicSolver):
         :param initial: Initial cartesian pose
         :param final: Final cartesian pose
         :param number_point: The number of points for the trajectory
-        :param points: Intermediate points (empty list by default)
         :return: A joint trajectory based on cartesian pose
         """
         trajectory = []
@@ -371,7 +381,7 @@ class RRRSolver(KinematicSolver):
         plt.legend(shadow=True)
         plt.show()
 
-    def animate_trajectory(self, traj, record=False, file_name='animation.mp4'):
+    def animate_2d_trajectory(self, traj, record=False, file_name='animation.mp4'):
         """
 
         :param traj: A valid trajectory
@@ -400,8 +410,8 @@ class RRRSolver(KinematicSolver):
         def animate(i):
             """perform animation step"""
             # X coordinate for the two articulations
-            thisx = [0, self._L2 * math.cos(traj[i][1]), self._L2 * math.cos(traj[i][1]) + self._L3 * math.cos(traj[i][2])]
-            thisz = [self._L1, self._L1 + self._L2 * math.sin(traj[i][1]), self._L1 + self._L2 * math.sin(traj[i][1]) + self._L3 * math.sin(traj[i][2])]
+            thisx = [0, self.__L2 * math.cos(traj[i][1]), self.__L2 * math.cos(traj[i][1]) + self.__L3 * math.cos(traj[i][2])]
+            thisz = [self.__L1, self.__L1 + self.__L2 * math.sin(traj[i][1]), self.__L1 + self.__L2 * math.sin(traj[i][1]) + self.__L3 * math.sin(traj[i][2])]
             line1.set_data(thisx, thisz)
             x_traj.append(thisx[2])
             y_traj.append(thisz[2])
@@ -421,7 +431,75 @@ class RRRSolver(KinematicSolver):
 
         plt.show()
 
+    def animate_3d_trajectory(self, traj, record=False, file_name='3d_animation.mp4'):
+        """
+        Animate a 3D trajectory and can save it into mp4 file
 
+        :param traj: A valid trajectory
+        :param record: True if the animation is recorded. False (by default) otherwise
+        :param file_name:
+        :return: an animation of the trajectory in 3D
+        """
+        # Attaching 3D axis to the figure
+        fig = plt.figure()
+        ax = p3.Axes3D(fig)
+
+        # Setting the axes properties
+        x_lim = float(self.__L1 + self.__L2)
+        y_lim = x_lim
+        z_lim = x_lim + float(self.__L3)
+        ax.set_xlim3d([-x_lim, x_lim])
+        ax.set_xlabel('X')
+
+        ax.set_ylim3d([-y_lim, y_lim])
+        ax.set_ylabel('Y')
+
+        ax.set_zlim3d([-x_lim, z_lim])
+        ax.set_zlabel('Z')
+
+        # Lines
+        line1, = ax.plot([], [], [], '-o', lw=2)
+        line2, = ax.plot([], [], [], 'r-', lw=2)
+        x_traj = []
+        y_traj = []
+        z_traj = []
+
+        def init():
+            """initialize animation"""
+            line1.set_data([], [])
+            line2.set_data([], [])
+            return line1, line2,
+
+        def animate(i):
+            """perform animation step"""
+            # X coordinate for the two articulations
+            thisx = [0, math.cos(traj[i][0])*self.__L2 * math.cos(traj[i][1]),
+                     math.cos(traj[i][0])*(self.__L2 * math.cos(traj[i][1]) + self.__L3 * math.cos(traj[i][2]))]
+            thisy = [0, math.sin(traj[i][0]) * (self.__L2 * math.cos(traj[i][1]) + self.__L3 * math.cos(traj[i][2])),
+                     math.sin(traj[i][0]) * (self.__L2 * math.cos(traj[i][1]) + self.__L3 * math.cos(traj[i][2]))]
+            thisz = [self.__L1, self.__L1 + self.__L2 * math.sin(traj[i][1]),
+                     self.__L1 + self.__L2 * math.sin(traj[i][1]) + self.__L3 * math.sin(traj[i][2])]
+            line1.set_data(thisx, thisy)
+            line1.set_3d_properties(thisz)
+            x_traj.append(thisx[2])
+            y_traj.append(thisy[2])
+            z_traj.append(thisz[2])
+            line2.set_data(x_traj, y_traj)
+            line2.set_3d_properties(z_traj)
+            return line1, line2,
+
+        ani = animation.FuncAnimation(fig, animate, np.arange(1, len(traj)),
+                                      interval=10, blit=True, init_func=init, repeat=False)
+
+        # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+        # installed.  The extra_args ensure that the x264 codec is used, so that
+        # the video can be embedded in html5.  You may need to adjust this for
+        # your system: for more information, see
+        # http://matplotlib.sourceforge.net/api/animation_api.html
+        if record:
+            ani.save(file_name, fps=30, extra_args=['-vcodec', 'libx264'])
+
+        plt.show()
 
 if __name__ == '__main__':
     # Do some tests
@@ -443,10 +521,10 @@ if __name__ == '__main__':
     print('Final configuration - cartesian ', end_pose_cart)
 
     # Rectangle
-    pts_1 = [1., 0., 1.75]
-    pts_2 = [1., 0., 2.25]
-    pts_3 = [1.5, 0., 2.25]
-    pts_4 = [1.5, 0., 1.75]
+    pts_1 = [1., 0, 1.75]
+    pts_2 = [1., 0, 2.25]
+    pts_3 = [1.5, 0, 2.25]
+    pts_4 = [1.5, 0, 1.75]
 
     pt_1 = kine_solver.ikine(pts_1)
     pt_2 = kine_solver.ikine(pts_2)
@@ -456,7 +534,7 @@ if __name__ == '__main__':
     # Show a joint trajectory
     traj = kine_solver.joint_trajectory([pt_1, pt_2, pt_3, pt_4, pt_1], 100)
     kine_solver.show_angle(traj)
-    kine_solver.animate_trajectory(traj)
+    kine_solver.animate_2d_trajectory(traj)
 
 
 
