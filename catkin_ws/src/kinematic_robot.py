@@ -42,7 +42,7 @@ class KinematicSolver(object):
         self.born_3_min = born_3[0]
         self.born_3_max = born_3[1]
 
-    def __check_angle(self, angular_pose):
+    def check_angle(self, angular_pose):
         """
         Check if the angular pose exists
         :param angular_pose: The wanted angular position (3 dof) (list)
@@ -67,7 +67,7 @@ class KinematicSolver(object):
                  Raise ValueError if the angular_pose is not ok
         """
         # Check the angular pose
-        if not self.__check_angle(angular_pose):
+        if not self.check_angle(angular_pose):
             raise ValueError
 
         # Compute the cartesian coordinates
@@ -109,10 +109,10 @@ class KinematicSolver(object):
         theta_2_2 = math.atan2(2 * t_alpha_2 / (1 + pow(t_alpha_2, 2)), (1 - pow(t_alpha_2, 2)) / (1 + pow(t_alpha_2, 2)))
 
         # Check the angular poses
-        if not self.__check_angle([theta_1, theta_2_1, beta_1]) and config:
+        if not self.check_angle([theta_1, theta_2_1, beta_1]) and config:
             print("Configuration 1 is not ok")
             raise ValueError
-        if not self.__check_angle([theta_1, theta_2_2, beta_2]) and (not config):
+        if not self.check_angle([theta_1, theta_2_2, beta_2]) and (not config):
             print("Configuration 2 is not ok")
             raise ValueError
 
@@ -153,10 +153,10 @@ class KinematicSolver(object):
         :return: A joint trajectory
         """
         # Check the initial and the final pose
-        if not self.__check_angle(initial):
+        if not self.check_angle(initial):
             print("Initial pose is not valid")
             raise ValueError
-        if not self.__check_angle(final):
+        if not self.check_angle(final):
             print("Final pose is not valid")
             raise ValueError
 
@@ -213,6 +213,9 @@ class KinematicSolver(object):
         if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
             print("Not the good dimension")
             raise TypeError
+        if number_points < 1:
+            print("Too few number of points")
+            raise ValueError
 
         # Iterate on points
         trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
@@ -233,6 +236,9 @@ class KinematicSolver(object):
         if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
             print("Not the good dimension")
             raise TypeError
+        if number_points < 1:
+            print("Too few number of points")
+            raise ValueError
 
         # Iterate on points
         trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
