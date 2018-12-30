@@ -42,7 +42,7 @@ class KinematicSolver(object):
         self.born_3_min = born_3[0]
         self.born_3_max = born_3[1]
 
-    def check_angle(self, angular_pose):
+    def __check_angle(self, angular_pose):
         """
         Check if the angular pose exists
         :param angular_pose: The wanted angular position (3 dof) (list)
@@ -67,7 +67,7 @@ class KinematicSolver(object):
                  Raise ValueError if the angular_pose is not ok
         """
         # Check the angular pose
-        if not self.check_angle(angular_pose):
+        if not self.__check_angle(angular_pose):
             raise ValueError
 
         # Compute the cartesian coordinates
@@ -92,10 +92,10 @@ class KinematicSolver(object):
         theta_1 = math.atan2(cartesian_pose[1], cartesian_pose[0])
 
         # Intermediate variables
-        A = math.sqrt(pow(cartesian_pose[0], 2) + pow(cartesian_pose[1], 2))
-        B = cartesian_pose[2] - self._L1
-        a = self._L2
-        b = self._L3
+        A = float(math.sqrt(pow(cartesian_pose[0], 2) + pow(cartesian_pose[1], 2)))
+        B = float(cartesian_pose[2] - self._L1)
+        a = float(self._L2)
+        b = float(self._L3)
         c_alpha = (pow(A, 2) + pow(B, 2) - pow(b, 2) + pow(a, 2)) / (2 * a)
         t_alpha_1 = (B + math.sqrt(pow(A, 2) + pow(B, 2) - pow(c_alpha, 2))) / (A + c_alpha)
         t_alpha_2 = (B - math.sqrt(pow(A, 2) + pow(B, 2) - pow(c_alpha, 2))) / (A + c_alpha)
@@ -109,10 +109,10 @@ class KinematicSolver(object):
         theta_2_2 = math.atan2(2 * t_alpha_2 / (1 + pow(t_alpha_2, 2)), (1 - pow(t_alpha_2, 2)) / (1 + pow(t_alpha_2, 2)))
 
         # Check the angular poses
-        if not self.check_angle([theta_1, theta_2_1, beta_1]) and config:
+        if not self.__check_angle([theta_1, theta_2_1, beta_1]) and config:
             print("Configuration 1 is not ok")
             raise ValueError
-        if not self.check_angle([theta_1, theta_2_2, beta_2]) and (not config):
+        if not self.__check_angle([theta_1, theta_2_2, beta_2]) and (not config):
             print("Configuration 2 is not ok")
             raise ValueError
 
@@ -123,7 +123,7 @@ class KinematicSolver(object):
             return theta_1, theta_2_2, beta_2
 
     @staticmethod
-    def polynome(A, B, C, D, E, F, eval_pt):
+    def __polynome(A, B, C, D, E, F, eval_pt):
         """
         Return a fifth degree polynome
         :param A: coeff for 5 degree
@@ -142,20 +142,21 @@ class KinematicSolver(object):
         E = [x * pow(eval_pt, 1) for x in E]
         return [a+b+c+d+e+f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
 
-    def joint_trajectory(self, initial, final, number_point):
+    def __start_to_end_joint_trajectory(self, initial, final, number_point):
         """
         Generate a valid joint trajectory by using polynomial interpolation
 
         :param initial: Initial joint pose (must be valid)
         :param final: Final joint pose (must be valid)
         :param number_point: The number of points for the trajectory
+        :param points: Intermediate points (empty list by default)
         :return: A joint trajectory
         """
         # Check the initial and the final pose
-        if not self.check_angle(initial):
+        if not self.__check_angle(initial):
             print("Initial pose is not valid")
             raise ValueError
-        if not self.check_angle(final):
+        if not self.__check_angle(final):
             print("Final pose is not valid")
             raise ValueError
 
@@ -167,11 +168,11 @@ class KinematicSolver(object):
         trajectory = []
 
         for i in range(number_point):
-            trajectory.append(self.polynome(A, B, C, [0, 0, 0], [0, 0, 0], initial, i))
+            trajectory.append(self.__polynome(A, B, C, [0, 0, 0], [0, 0, 0], initial, i))
 
         return trajectory
 
-    def linear_trajectory(self, initial, final, number_point):
+    def __start_to_end_linear_trajectory(self, initial, final, number_point):
         """
         Generate a joint trajectory by using linear cartesian interpolation
         /!\ Singularity can occur /!\
@@ -179,6 +180,7 @@ class KinematicSolver(object):
         :param initial: Initial cartesian pose
         :param final: Final cartesian pose
         :param number_point: The number of points for the trajectory
+        :param points: Intermediate points (empty list by default)
         :return: A joint trajectory based on cartesian pose
         """
         trajectory = []
@@ -198,6 +200,47 @@ class KinematicSolver(object):
             else:
                 trajectory.append(new_point)
 
+        return trajectory
+
+    def joint_trajectory(self, points, number_points):
+        """
+
+        :param points: (2x3 min) list of angle points
+        :param number_points: (>=1)The number of points for the trajectory
+        :return: a valid trajectory
+        """
+        # Check points - size (2,3) min
+        if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
+            print("Not the good dimension")
+            raise TypeError
+
+        # Iterate on points
+        trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
+        for i in range(len(points)-1):
+            trajectory[i*number_points:(i+1)*number_points, :] = self.__start_to_end_joint_trajectory(points[i][:], points[i+1][:], number_points)
+
+        # Return the trajectory
+        return trajectory
+
+    def linear_trajectory(self, points, number_points):
+        """
+
+        :param points: (2x3 min) list of cartesian points
+        :param number_points: (>=1)The number of points for the trajectory
+        :return: a valid trajectory
+        """
+        # Check points - size (2,3) min
+        if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
+            print("Not the good dimension")
+            raise TypeError
+
+        # Iterate on points
+        trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
+
+        for i in range(len(points)-1):
+            trajectory[i*number_points:(i+1)*number_points, :] = self.__start_to_end_linear_trajectory(points[i][:], points[i+1][:], number_points)
+
+        # Return the trajectory
         return trajectory
 
     @staticmethod
@@ -269,17 +312,19 @@ if __name__ == '__main__':
     kine_solver = KinematicSolver(1, 1, 1, [-3.14, 3.14], [-3.14, 3.14], [-3.14, 3.14])
 
     # Show an inverse calculation
-    init_pose_angle = [0, math.pi/4, 0]
+    init_pose_angle = [0., math.pi/4, 0.]
     print('Initial configuration - angle ', init_pose_angle)
     init_pose_cart = kine_solver.fkine(init_pose_angle)
     print('Initial configuration - cartesian ', init_pose_cart)
-    end_pose_angle = [0, math.pi/4, math.pi/4]
+    intermediate_pose_angle = [0., math.pi/3, math.pi/4]
+    intermediate_pose_cart = kine_solver.fkine(intermediate_pose_angle)
+    end_pose_angle = [0., math.pi/4, math.pi/4]
     print('Final configuration - angle ', end_pose_angle)
     end_pose_cart = kine_solver.fkine(end_pose_angle)
     print('Final configuration - cartesian ', end_pose_cart)
 
     # Show a joint trajectory
-    traj = kine_solver.linear_trajectory(init_pose_cart, end_pose_cart, 100)
+    traj = kine_solver.linear_trajectory([init_pose_cart, intermediate_pose_cart, end_pose_cart], 100)
     kine_solver.show_angle(traj)
     kine_solver.animate_trajectory(traj)
 
