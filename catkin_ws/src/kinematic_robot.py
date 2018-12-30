@@ -14,6 +14,121 @@ import matplotlib.animation as animation
 
 class KinematicSolver(object):
 
+    def __init__(self):
+        """
+        Constructor for the class
+
+        """
+
+    def check_angle(self, angular_pose):
+        """
+        Check if the angular pose exists
+        :param angular_pose: The wanted angular position (3 dof) (list)
+        :return: true if ok
+                 false if not
+        """
+
+    def fkine(self, angular_pose):
+        """
+        Forward kinematic solver
+
+        :param angular_pose: The wanted angular position in rad (3 dof) (list)
+        :return: the cartesian position related to the angular pose
+                 Raise ValueError if the angular_pose is not ok
+        """
+
+    def ikine(self, cartesian_pose, config=True):
+        """
+        Inverse kinematic solver
+
+        :param cartesian_pose: The wanted cartesian position (3 dof)
+        :param config: the configuration of the result :
+                       - False : angle_2 > angle_1
+                       - True : angle_1 > angle_2
+        :return: the angles related to the cartesian pose in rad
+        """
+
+    @staticmethod
+    def __polynome(A, B, C, D, E, F, eval_pt):
+        """
+        Return a fifth degree polynome
+        :param A: coeff for 5 degree
+        :param B: coeff for 4 degree
+        :param C: coeff for 3 degree
+        :param D: coeff for 2 degree
+        :param E: coeff for 1 degree
+        :param F: constante
+        :param eval_pt: the value where the polynome is evaluated
+        :return: A*(eval_pt)^5 + B*(eval_pt)^4 + C*(eval_pt)^3 + D*(eval_pt)^2 + E*(eval_pt) + F
+        """
+        A = [x * pow(eval_pt, 5) for x in A]
+        B = [x * pow(eval_pt, 4) for x in B]
+        C = [x * pow(eval_pt, 3) for x in C]
+        D = [x * pow(eval_pt, 2) for x in D]
+        E = [x * pow(eval_pt, 1) for x in E]
+        return [a+b+c+d+e+f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
+
+    def __start_to_end_joint_trajectory(self, initial, final, number_point):
+        """
+        Generate a valid joint trajectory by using polynomial interpolation
+
+        :param initial: Initial joint pose (must be valid)
+        :param final: Final joint pose (must be valid)
+        :param number_point: The number of points for the trajectory
+        :return: A joint trajectory
+        """
+
+    def __start_to_end_linear_trajectory(self, initial, final, number_point):
+        """
+        Generate a joint trajectory by using linear cartesian interpolation
+        /!\ Singularity can occur /!\
+
+        :param initial: Initial cartesian pose
+        :param final: Final cartesian pose
+        :param number_point: The number of points for the trajectory
+        :return: A joint trajectory based on cartesian pose
+        """
+
+    def joint_trajectory(self, points, number_points):
+        """
+
+        :param points: (2x3 min) list of angle points
+        :param number_points: (>=1)The number of points for the trajectory
+        :return: a valid trajectory
+        """
+
+    def linear_trajectory(self, points, number_points):
+        """
+
+        :param points: (2x3 min) list of cartesian points
+        :param number_points: (>=1)The number of points for the trajectory
+        :return: a valid trajectory
+        """
+
+    @staticmethod
+    def show_angle(traj):
+        """
+
+        :param traj: a valid trajectory (list of 3D lists)
+        :return: show the angles
+        """
+        trajectory = np.array(traj)
+        for i in range(0, np.shape(traj)[1]):
+            plt.plot(range(len(traj)), trajectory[:, i], label=["$\theta_{0}$".format(i)])
+        plt.legend(shadow=True)
+        plt.show()
+
+    def animate_trajectory(self, traj, record=False, file_name='animation.mp4'):
+        """
+
+        :param traj: A valid trajectory
+        :param record: True if the animation is recorded. False (by default) otherwise
+        :param file_name:
+        :return:
+        """
+
+class RRRSolver(KinematicSolver):
+
     def __init__(self, l1, l2, l3, born_1, born_2, born_3):
         """
         Constructor for the class
@@ -31,6 +146,8 @@ class KinematicSolver(object):
             raise ValueError('a joint distance is negative')
         if (l1 == 0) & (l2 == 0) & (l3 == 0):
             raise ValueError('the joint distances are equal to 0')
+
+        super(RRRSolver, self).__init__()
 
         self._L1 = l1
         self._L2 = l2
@@ -305,24 +422,39 @@ class KinematicSolver(object):
         plt.show()
 
 
+
 if __name__ == '__main__':
     # Do some tests
-    kine_solver = KinematicSolver(1, 1, 1, [-3.14, 3.14], [-3.14, 3.14], [-3.14, 3.14])
+    kine_solver = RRRSolver(1, 1, 1, [-3.14, 3.14], [-3.14, 3.14], [-3.14, 3.14])
 
     # Show an inverse calculation
     init_pose_angle = [0., math.pi/4, 0.]
     print('Initial configuration - angle ', init_pose_angle)
     init_pose_cart = kine_solver.fkine(init_pose_angle)
     print('Initial configuration - cartesian ', init_pose_cart)
-    intermediate_pose_angle = [0., math.pi/3, math.pi/4]
-    intermediate_pose_cart = kine_solver.fkine(intermediate_pose_angle)
+    intermediate_pose_angle_1 = [0., math.pi/3, math.pi/4]
+    intermediate_pose_cart_1 = kine_solver.fkine(intermediate_pose_angle_1)
+
+    intermediate_pose_angle_2 = [0., math.pi / 2, math.pi / 4]
+    intermediate_pose_cart_2 = kine_solver.fkine(intermediate_pose_angle_2)
     end_pose_angle = [0., math.pi/4, math.pi/4]
     print('Final configuration - angle ', end_pose_angle)
     end_pose_cart = kine_solver.fkine(end_pose_angle)
     print('Final configuration - cartesian ', end_pose_cart)
 
+    # Rectangle
+    pts_1 = [1., 0., 1.75]
+    pts_2 = [1., 0., 2.25]
+    pts_3 = [1.5, 0., 2.25]
+    pts_4 = [1.5, 0., 1.75]
+
+    pt_1 = kine_solver.ikine(pts_1)
+    pt_2 = kine_solver.ikine(pts_2)
+    pt_3 = kine_solver.ikine(pts_3)
+    pt_4 = kine_solver.ikine(pts_4)
+
     # Show a joint trajectory
-    traj = kine_solver.linear_trajectory([init_pose_cart, intermediate_pose_cart, end_pose_cart], 100)
+    traj = kine_solver.joint_trajectory([pt_1, pt_2, pt_3, pt_4, pt_1], 100)
     kine_solver.show_angle(traj)
     kine_solver.animate_trajectory(traj)
 
