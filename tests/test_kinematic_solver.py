@@ -19,10 +19,22 @@ class TestKinematicSolver:
         with pytest.raises(ValueError):
             self.solver = KinematicSolver(-1, 0, 0, [0, math.pi], [0, math.pi], [0, math.pi])
 
-    def test_check_angle(self):
+    def test_check_angle_1(self):
         self.solver = KinematicSolver(1, 1, 1, [-0.1, 3.14], [-0.1, 3.14], [-0.1, 3.14])
 
         result = self.solver.check_angle([-0.2, 0, 0])
+        assert result is False
+
+    def test_check_angle_2(self):
+        self.solver = KinematicSolver(1, 1, 1, [-0.1, 3.14], [-0.1, 3.14], [-0.1, 3.14])
+
+        result = self.solver.check_angle([-0, 4, 0])
+        assert result is False
+
+    def test_check_angle_3(self):
+        self.solver = KinematicSolver(1, 1, 1, [-0.1, 3.14], [-0.1, 3.14], [-0.1, 3.14])
+
+        result = self.solver.check_angle([-2, -2, -2])
         assert result is False
 
     def test_fkine(self):
