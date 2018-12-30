@@ -92,10 +92,10 @@ class KinematicSolver(object):
         theta_1 = math.atan2(cartesian_pose[1], cartesian_pose[0])
 
         # Intermediate variables
-        A = float(math.sqrt(pow(cartesian_pose[0], 2) + pow(cartesian_pose[1], 2)))
-        B = float(cartesian_pose[2] - self._L1)
-        a = float(self._L2)
-        b = float(self._L3)
+        A = math.sqrt(pow(cartesian_pose[0], 2) + pow(cartesian_pose[1], 2))
+        B = cartesian_pose[2] - self._L1
+        a = self._L2
+        b = self._L3
         c_alpha = (pow(A, 2) + pow(B, 2) - pow(b, 2) + pow(a, 2)) / (2 * a)
         t_alpha_1 = (B + math.sqrt(pow(A, 2) + pow(B, 2) - pow(c_alpha, 2))) / (A + c_alpha)
         t_alpha_2 = (B - math.sqrt(pow(A, 2) + pow(B, 2) - pow(c_alpha, 2))) / (A + c_alpha)
@@ -110,11 +110,9 @@ class KinematicSolver(object):
 
         # Check the angular poses
         if not self.check_angle([theta_1, theta_2_1, beta_1]) and config:
-            print("Configuration 1 is not ok")
-            raise ValueError
+            raise ValueError("Configuration 1 is not ok")
         if not self.check_angle([theta_1, theta_2_2, beta_2]) and (not config):
-            print("Configuration 2 is not ok")
-            raise ValueError
+            raise ValueError("Configuration 2 is not ok")
 
         if config:
             return theta_1, theta_2_1, beta_1
@@ -154,11 +152,9 @@ class KinematicSolver(object):
         """
         # Check the initial and the final pose
         if not self.check_angle(initial):
-            print("Initial pose is not valid")
-            raise ValueError
+            raise ValueError("Initial pose is not valid")
         if not self.check_angle(final):
-            print("Final pose is not valid")
-            raise ValueError
+            raise ValueError("Final pose is not valid")
 
         # Polynomial coefficients
         A = ([6 * (y-x) / pow(number_point, 5) for y, x in zip(final, initial)])
@@ -211,11 +207,9 @@ class KinematicSolver(object):
         """
         # Check points - size (2,3) min
         if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
-            print("Not the good dimension")
-            raise TypeError
+            raise TypeError("Not the right dimension")
         if number_points < 1:
-            print("Too few number of points")
-            raise ValueError
+            raise ValueError("Too few number of points")
 
         # Iterate on points
         trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
@@ -234,11 +228,9 @@ class KinematicSolver(object):
         """
         # Check points - size (2,3) min
         if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
-            print("Not the good dimension")
-            raise TypeError
+            raise TypeError("Not the right dimension")
         if number_points < 1:
-            print("Too few number of points")
-            raise ValueError
+            raise ValueError("Too few number of points")
 
         # Iterate on points
         trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
