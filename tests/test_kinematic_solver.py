@@ -19,6 +19,12 @@ class TestKinematicSolver:
         with pytest.raises(ValueError):
             self.solver = KinematicSolver(-1, 0, 0, [0, math.pi], [0, math.pi], [0, math.pi])
 
+    def test_check_angle(self):
+        self.solver = KinematicSolver(1, 1, 1, [-0.1, 3.14], [-0.1, 3.14], [-0.1, 3.14])
+
+        result = self.solver.check_angle([-0.2, 0, 0])
+        assert result is False
+
     def test_fkine(self):
         # Test one case that is good
         self.solver = KinematicSolver(1, 1, 1, [-0.1, 3.14], [-0.1, 3.14], [-0.1, 3.14])
@@ -35,6 +41,11 @@ class TestKinematicSolver:
         init_pose_angle = (0., math.pi / 4, 0.)
         end_pose_angle = self.solver.ikine([1.7071067811865475, 0.0, 1.7071067811865475])
         assert end_pose_angle == init_pose_angle
+
+
+
+
+
 
 
 
