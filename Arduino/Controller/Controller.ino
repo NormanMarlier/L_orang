@@ -15,6 +15,8 @@
 #include <std_msgs/Float32MultiArray.h>
 #include "data_structure.h"
 
+// Function declaration
+void set_angle(float angle, byte motor_id);
 
 // ros node
 ros::NodeHandle nh;
@@ -53,9 +55,9 @@ void emergency_button()
 void cmd_motors(const std_msgs::Float32MultiArray& cmd_msg)
 {
   // Change the state of the motors
-  robot.pos.angle_1 = cmd_msg.data[0];
-  robot.pos.angle_2 = cmd_msg.data[1];
-  robot.pos.angle_3 = cmd_msg.data[2];
+  robot.pos.angle_1 = set_angle(cmd_msg.data[0], 1);
+  robot.pos.angle_2 = set_angle(cmd_msg.data[1], 2);
+  robot.pos.angle_3 = set_angle(cmd_msg.data[2], 3);
   if (cmd_msg.data[3] == 0)
   {
     robot.pos.angle_4 = cmd_msg.data[3];
@@ -72,6 +74,8 @@ void cmd_motors(const std_msgs::Float32MultiArray& cmd_msg)
     robot.gripper_state = GRABBING;
   }
 }
+
+
 
 // Ros subscriber
 ros::Subscriber<std_msgs::Float32MultiArray> sub("lorang", &cmd_motors);
@@ -117,4 +121,27 @@ void loop()
   // Wait
   delay(1);
 
+}
+
+// Hardware check
+void set_angle(float angle, byte motor_id)
+{
+  if (motor_id == 1)
+  {
+    if (angle < ANGLE_1_MIN) robot.pos.angle_1 = ANGLE_1_MIN;
+    else if (angle > ANGLE_1_MAX) robot.pos.angle_1 = ANGLE_1_MAX;
+    else robot.pos.angle_1 = angle;
+  }
+  if (motor_id == 2)
+  {
+    if (angle < ANGLE_2_MIN) robot.pos.angle_2 = ANGLE_2_MIN;
+    else if (angle > ANGLE_2_MAX) robot.pos.angle_2 = ANGLE_2_MAX;
+    else robot.pos.angle_2 = angle;
+  }
+  if (motor_id == 3)
+  {
+    if (angle < ANGLE_3_MIN) robot.pos.angle_3 = ANGLE_3_MIN;
+    else if (angle > ANGLE_3_MAX) robot.pos.angle_3 = ANGLE_3_MAX;
+    else robot.pos.angle_3 = angle;
+  }
 }
