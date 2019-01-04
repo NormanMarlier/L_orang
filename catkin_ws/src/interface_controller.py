@@ -10,7 +10,7 @@ docstring
 import rospy
 import math
 from std_msgs.msg import Float32MultiArray
-from kinematic_robot import joint_trajectory
+from kinematic_robot import RRRSolver
 
 # Meta data
 __author__ = 'Norman Marlier'
@@ -26,7 +26,7 @@ def talker():
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(15) # 15hz
     #  Compute a trajectory
-    traj = joint_trajectory([0, math.radians(-10), 0], [0, math.radians(140), 0], 100)
+    #
     gripper = 0
     k = 0
     while not rospy.is_shutdown():
