@@ -2,15 +2,13 @@
 
 """
 
-docstring
+This script allows the user to send joint values, separated with spaces, by using ROS
 
 """
 
 # Import module
 import rospy
-import math
 from std_msgs.msg import Float32MultiArray
-from src.kinematic_robot import RRRSolver
 
 # Meta data
 __author__ = 'Norman Marlier'
@@ -22,27 +20,21 @@ __status__ = "Prototype"
 
 
 def talker():
-    pub = rospy.Publisher('lorang', Float32MultiArray, queue_size=10)
-    rospy.init_node('talker', anonymous=True)
-    rate = rospy.Rate(15) # 15hz
-    #  Compute a trajectory
-    #
-    gripper = 0
-    k = 0
+    pub = rospy.Publisher('controller-lorang', Float32MultiArray, queue_size=10)
+    rospy.init_node('controller-talker', anonymous=True)
+    rate = rospy.Rate(15)  # 15hz
+
     while not rospy.is_shutdown():
+        s = input()
+        cmd_input = list(map(int, s.split()))
+        print(cmd_input)
         cmd_motors = Float32MultiArray()
-        cmd_motors.data = [traj[k][0], math.degrees(traj[k][1]), traj[k][2], gripper]
-        print(math.degrees(traj[k][1]))
+        cmd_motors.data = cmd_input
+
         pub.publish(cmd_motors)
-        gripper = 1 - gripper
-        k += 1
-        if k == 100:
-            k = 0
-        print('k =', k)
         rate.sleep()
 
 if __name__ == '__main__':
-  	
     try:
         talker()
     except rospy.ROSInterruptException:
