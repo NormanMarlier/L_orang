@@ -10,7 +10,7 @@ docstring
 import rospy
 import math
 from std_msgs.msg import Float32MultiArray
-from kinematic_robot import joint_trajectory
+from src.kinematic_robot import RRRSolver
 
 # Meta data
 __author__ = 'Norman Marlier'
@@ -30,8 +30,8 @@ def talker():
     gripper = 0
     k = 0
     while not rospy.is_shutdown():
-	cmd_motors = Float32MultiArray();
-	cmd_motors.data = [traj[k][0], math.degrees(traj[k][1]), traj[k][2], gripper]
+        cmd_motors = Float32MultiArray()
+        cmd_motors.data = [traj[k][0], math.degrees(traj[k][1]), traj[k][2], gripper]
         print(math.degrees(traj[k][1]))
         pub.publish(cmd_motors)
         gripper = 1 - gripper

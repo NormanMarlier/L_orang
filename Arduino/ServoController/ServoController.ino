@@ -2,13 +2,17 @@
 
 
 // pins
-const byte servo_pin = 2;
+const byte servo_pin_1 = 7;
+const byte servo_pin_2 = 8;
+const byte servo_pin_3 = 3;
 
 // Stream buffer
 String readString;
 
 // Servo
 Servo servomotor;
+Servo servomotor2;
+Servo servomotor3;
 
 // Angle variable
 unsigned char angle = 0;
@@ -20,7 +24,9 @@ void setup()
   Serial.begin(9600);
 
   // Attahc the servo
-  servomotor.attach(servo_pin, 1000, 2000);
+  servomotor.attach(servo_pin_3);
+  servomotor2.attach(servo_pin_2);
+  servomotor3.attach(servo_pin_1);
 }
 
 void loop() 
@@ -50,6 +56,8 @@ void loop()
       Serial.print("writing Angle: ");
       Serial.println(n);
       servomotor.write(n);
+      servomotor2.write(n);
+      servomotor3.write(n);
     }
 
     readString=""; //empty for next input
