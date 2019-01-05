@@ -1,0 +1,10 @@
+[
+  "test_kinematic_solver.py::TestRRRSolver::()::test_init_solver_1",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_init_solver_2",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_check_angle_1",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_check_angle_2",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_check_angle_3",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_check_angle_4",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_fkine",
+  "test_kinematic_solver.py::TestRRRSolver::()::test_ikine"
+]
