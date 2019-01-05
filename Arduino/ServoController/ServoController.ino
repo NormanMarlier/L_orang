@@ -20,7 +20,7 @@ void setup()
   Serial.begin(9600);
 
   // Attahc the servo
-  servomotor.attach(servo_pin, 1000, 2000);
+  servomotor.attach(servo_pin);
 }
 
 void loop() 
