@@ -25,11 +25,12 @@ def talker():
     rate = rospy.Rate(15)  # 15hz
 
     while not rospy.is_shutdown():
-        s = input()
+        s = raw_input()
         cmd_input = list(map(int, s.split()))
         print(cmd_input)
         cmd_motors = Float32MultiArray()
         cmd_motors.data = cmd_input
+        rospy.loginfo(cmd_motors)
 
         pub.publish(cmd_motors)
         rate.sleep()
