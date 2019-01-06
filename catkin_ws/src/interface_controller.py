@@ -22,7 +22,7 @@ __status__ = "Prototype"
 def talker():
     pub = rospy.Publisher('controller-lorang', Float32MultiArray, queue_size=10)
     rospy.init_node('controller-talker', anonymous=True)
-    rate = rospy.Rate(15)  # 15hz
+    rate = rospy.Rate(20)  # 20hz - 50ms
 
     while not rospy.is_shutdown():
         s = input()
