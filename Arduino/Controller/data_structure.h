@@ -6,8 +6,8 @@
 #define ANGLE_1_MAX 180
 #define ANGLE_2_MIN 80
 #define ANGLE_2_MAX 150
-#define ANGLE_3_MIN 105
-#define ANGLE_3_MAX 160
+#define ANGLE_3_MIN 80
+#define ANGLE_3_MAX 135
 
 /* ========================================================= *\
  * This structure is used to retain the angular values       *

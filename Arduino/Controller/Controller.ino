@@ -39,7 +39,7 @@ Servo servomotors[4];
 // servo[3] : moves the gripper
 
 // Home position
-Position home_pos = {0, 90, 0, CLOSE};
+Position home_pos = {0, 90, 90, CLOSE};
 
 // Robot structure
 Robot robot = {home_pos, CLOSE};
@@ -55,9 +55,9 @@ void emergency_button()
 void cmd_motors(const std_msgs::Float32MultiArray& cmd_msg)
 {
   // Change the state of the motors
-  robot.pos.angle_1 = set_angle(cmd_msg.data[0], 1);
-  robot.pos.angle_2 = set_angle(cmd_msg.data[1], 2);
-  robot.pos.angle_3 = set_angle(cmd_msg.data[2], 3);
+  set_angle(cmd_msg.data[0], 1);
+  set_angle(cmd_msg.data[1], 2);
+  set_angle(cmd_msg.data[2], 3);
   if (cmd_msg.data[3] == 0)
   {
     robot.pos.angle_4 = cmd_msg.data[3];
@@ -78,7 +78,7 @@ void cmd_motors(const std_msgs::Float32MultiArray& cmd_msg)
 
 
 // Ros subscriber
-ros::Subscriber<std_msgs::Float32MultiArray> sub("lorang", &cmd_motors);
+ros::Subscriber<std_msgs::Float32MultiArray> sub("controller-lorang", &cmd_motors);
 
 void setup() 
 {
@@ -90,9 +90,9 @@ void setup()
   nh.subscribe(sub);
   
   // Attach the servos and go to home pos
-  servomotors[0].attach(servo_0_pin, 1000, 2000);
-  servomotors[1].attach(servo_1_pin, 1000, 2000);
-  servomotors[2].attach(servo_2_pin, 1000, 2000);
+  servomotors[0].attach(servo_0_pin);
+  servomotors[1].attach(servo_1_pin);
+  servomotors[2].attach(servo_2_pin);
   servomotors[3].attach(servo_3_pin);
   
   servomotors[0].write(home_pos.angle_1);
