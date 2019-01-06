@@ -1,4 +1,5 @@
 import math
+import abc
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -7,20 +8,12 @@ import mpl_toolkits.mplot3d.axes3d as p3
 # This class represents a kinematic solver (no dynamic equations)
 # This solver is based on geometrical features such as the distances between
 # two joints.
-# It can be used only for 3 DOF mechanical systems as robotic arms
-# with a RRR configuration
-
-# Lorang - born_2 (-10, 120)
+# KinematicSolver is an abstract class. Different solvers can be derived from it
 
 
-class KinematicSolver(object):
+class KinematicSolver(abc.ABC):
 
-    def __init__(self):
-        """
-        Constructor for the class
-
-        """
-
+    @abc.abstractmethod
     def check_angle(self, angular_pose):
         """
         Check if the angular pose exists
@@ -29,6 +22,41 @@ class KinematicSolver(object):
                  false if not
         """
 
+    @abc.abstractmethod
+    def calibration(self, calibration_pose, calibration_direction, born_1, born_2, born_3):
+        """
+        Calibrate the born of the solver coordinate system.
+        Compute the relation between the device coordinate system and the solver coordinate system.
+        /!\ In degrees /!\
+        Allows the transformations between the hardware and the software
+
+        :param calibration_pose: The values of the angles in the solver coordinate system
+        :param calibration_direction: The way the values changes = the rate (value = {-1, 1})
+        :param born_1: (tuple) min and max angle for the first joint in degrees
+        :param born_2: (tuple) min and max angle for the second joint in degrees
+        :param born_3: (tuple) min and max angle for the third joint in degrees
+        """
+
+    @abc.abstractmethod
+    def to_device_coordinate(self, solver_pose):
+        """
+        Change the values from the solver coordinate system to the device coordinate system
+
+        :param solver_pose: A pose from the solver coordinate system (in rad)
+        :return: 'solver_pose' with respect to the device coordinate system
+        """
+
+    @abc.abstractmethod
+    def to_solver_coordinate(self, device_pose):
+        """
+        Change the values from the device coordinate system to the solver coordinate system
+        /!\ In degrees /!\
+
+        :param device_pose: A pose from the device coordinate system
+        :return: 'device_pose' with respect to the solver coordinate system
+        """
+
+    @abc.abstractmethod
     def fkine(self, angular_pose):
         """
         Forward kinematic solver
@@ -38,6 +66,7 @@ class KinematicSolver(object):
                  Raise ValueError if the angular_pose is not ok
         """
 
+    @abc.abstractmethod
     def ikine(self, cartesian_pose, config=True):
         """
         Inverse kinematic solver
@@ -50,7 +79,7 @@ class KinematicSolver(object):
         """
 
     @staticmethod
-    def __polynome(A, B, C, D, E, F, eval_pt):
+    def polynome(A, B, C, D, E, F, eval_pt):
         """
         Return a fifth degree polynome
         :param A: coeff for 5 degree
@@ -69,7 +98,8 @@ class KinematicSolver(object):
         E = [x * pow(eval_pt, 1) for x in E]
         return [a+b+c+d+e+f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
 
-    def __start_to_end_joint_trajectory(self, initial, final, number_point):
+    @abc.abstractmethod
+    def start_to_end_joint_trajectory(self, initial, final, number_point):
         """
         Generate a valid joint trajectory by using polynomial interpolation
 
@@ -79,7 +109,8 @@ class KinematicSolver(object):
         :return: A joint trajectory
         """
 
-    def __start_to_end_linear_trajectory(self, initial, final, number_point):
+    @abc.abstractmethod
+    def start_to_end_linear_trajectory(self, initial, final, number_point):
         """
         Generate a joint trajectory by using linear cartesian interpolation
         /!\ Singularity can occur /!\
@@ -90,6 +121,7 @@ class KinematicSolver(object):
         :return: A joint trajectory based on cartesian pose
         """
 
+    @abc.abstractmethod
     def joint_trajectory(self, points, number_points):
         """
 
@@ -98,6 +130,7 @@ class KinematicSolver(object):
         :return: a valid trajectory
         """
 
+    @abc.abstractmethod
     def linear_trajectory(self, points, number_points):
         """
 
@@ -119,6 +152,7 @@ class KinematicSolver(object):
         plt.legend(shadow=True)
         plt.show()
 
+    @abc.abstractmethod
     def animate_2d_trajectory(self, traj, record=False, file_name='2d_animation.mp4'):
         """
 
@@ -128,6 +162,7 @@ class KinematicSolver(object):
         :return: an animation of the trajectory in 2D (x-z plane)
         """
 
+    @abc.abstractmethod
     def animate_3d_trajectory(self, traj, record=False, file_name='3d_animation.mp4'):
         """
         Animate a 3D trajectory and can save it into mp4 file
@@ -138,6 +173,14 @@ class KinematicSolver(object):
         :return: an animation of the trajectory in 3D
         """
 
+# RRRSolver is a Kinematic Solver
+# It can be used only for 3 DOF mechanical systems as robotic arms
+# with a RRR configuration
+# /!\ Be careful that the angles are given with respect to the horizontal line /!\
+#
+# Example for Lorang :
+# Lorang - born_2 (-10, 120)
+
 
 class RRRSolver(KinematicSolver):
 
@@ -145,39 +188,41 @@ class RRRSolver(KinematicSolver):
         """
         Constructor for the class
 
-        l1 > 0 | l2 > 0 | l3 > 0
+        l1 >= 0 & l2 > 0 & l3 > 0
 
         :param l1: (>= 0) distance between the ground of the base and the first joint (z axis)
-        :param l2: (>= 0) distance between the first joint and the second joint
-        :param l3: (>= 0) distance between the second joint and the end-effector
-        :param born_1: (tuple) min and max angle for the first joint in rad
-        :param born_2: (tuple) min and max angle for the second joint in rad
-        :param born_3: (tuple) min and max angle for the third joint in rad
+        :param l2: (> 0) distance between the first joint and the second joint
+        :param l3: (> 0) distance between the second joint and the end-effector
+        :param born_1: (tuple) min and max angle for the first joint in degrees
+        :param born_2: (tuple) min and max angle for the second joint in degrees
+        :param born_3: (tuple) min and max angle for the third joint in degrees
         """
         if l1 < 0 or l2 < 0 or l3 < 0:
             raise ValueError('a joint distance is negative')
-        if (l1 == 0) & (l2 == 0) & (l3 == 0):
-            raise ValueError('the joint distances are equal to 0')
+        if (l2 == 0) | (l3 == 0):
+            raise ValueError('A joint distance is equal to 0')
 
-        super(RRRSolver, self).__init__()
-
+        # Geometrical parameters
         self.__L1 = l1
         self.__L2 = l2
         self.__L3 = l3
-        self.born_1_min = born_1[0]
-        self.born_1_max = born_1[1]
-        self.born_2_min = born_2[0]
-        self.born_2_max = born_2[1]
-        self.born_3_min = born_3[0]
-        self.born_3_max = born_3[1]
+        # Born
+        self.born_1_min = math.radians(born_1[0])
+        self.born_1_max = math.radians(born_1[1])
+        self.born_2_min = math.radians(born_2[0])
+        self.born_2_max = math.radians(born_2[1])
+        self.born_3_min = math.radians(born_3[0])
+        self.born_3_max = math.radians(born_3[1])
+        # Solver system coordinate parameters
+        self.__delta_1 = 0
+        self.__delta_2 = 0
+        self.__delta_3 = 0
+        self.__rate_1 = 1
+        self.__rate_2 = 1
+        self.__rate_3 = 1
 
     def check_angle(self, angular_pose):
-        """
-        Check if the angular pose exists
-        :param angular_pose: The wanted angular position (3 dof) (list)
-        :return: true if ok
-                 false if not
-        """
+
         if angular_pose[0] > self.born_1_max or angular_pose[0] < self.born_1_min:
             return False
         if angular_pose[1] > self.born_2_max or angular_pose[1] < self.born_2_min:
@@ -187,14 +232,67 @@ class RRRSolver(KinematicSolver):
 
         return True
 
-    def fkine(self, angular_pose):
+    def calibration(self, calibration_pose, calibration_direction, born_1, born_2, born_3):
         """
-        Forward kinematic solver
+        The solver coordinate system is defined as :
+        theta 1 = 0, y = 0, z > 0 and -born_x < x < born_x
+        theta 2 and 3 start from horizontal line
+        """
+        # Check the values of 'calibration_direction'
+        if (calibration_direction[0] is not 1) and (calibration_direction[0] is not -1):
+            raise ValueError("-1 or 1 are expected")
+        if (calibration_direction[1] is not 1) and (calibration_direction[1] is not -1):
+            raise ValueError("-1 or 1 are expected")
+        if (calibration_direction[2] is not 1) and (calibration_direction[2] is not -1):
+            raise ValueError("-1 or 1 are expected")
 
-        :param angular_pose: The wanted angular position in rad (3 dof) (list)
-        :return: the cartesian position related to the angular pose
-                 Raise ValueError if the angular_pose is not ok
-        """
+        self.__delta_1 = calibration_pose[0]
+        self.__delta_2 = calibration_pose[1]
+        self.__delta_3 = calibration_pose[2]
+        self.__rate_1 = calibration_direction[0]
+        self.__rate_2 = calibration_direction[1]
+        self.__rate_3 = calibration_direction[2]
+
+        # Update the born
+        self.born_1_min, self.born_2_min, self.born_3_min = self.to_solver_coordinate([born_1[0],
+                                                                                       born_2[0],
+                                                                                       born_3[0]])
+        self.born_1_max, self.born_2_max, self.born_3_max = self.to_solver_coordinate([born_1[1],
+                                                                                       born_2[1],
+                                                                                       born_3[1]])
+
+        # Update
+        if self.born_1_min > self.born_1_max:
+            tmp = self.born_1_min
+            self.born_1_min = self.born_1_max
+            self.born_1_max =tmp
+        if self.born_2_min > self.born_2_max:
+            tmp = self.born_2_min
+            self.born_2_min = self.born_2_max
+            self.born_2_max =tmp
+        if self.born_3_min > self.born_3_max:
+            tmp = self.born_3_min
+            self.born_3_min = self.born_3_max
+            self.born_3_max =tmp
+
+    def to_device_coordinate(self, solver_pose):
+
+        dof_1 = self.__rate_1 * math.degrees(solver_pose[0]) - self.__rate_1 * self.__delta_1
+        dof_2 = self.__rate_2 * math.degrees(solver_pose[1]) - self.__rate_2 * self.__delta_2
+        dof_3 = self.__rate_3 * math.degrees(solver_pose[2]) - self.__rate_3 * self.__delta_3
+
+        return [dof_1, dof_2, dof_3]
+
+    def to_solver_coordinate(self, device_pose):
+
+        dof_1 = math.radians(self.__rate_1 * device_pose[0] + self.__delta_1)
+        dof_2 = math.radians(self.__rate_2 * device_pose[1] + self.__delta_2)
+        dof_3 = math.radians(self.__rate_3 * device_pose[2] + self.__delta_3)
+
+        return [dof_1, dof_2, dof_3]
+
+    def fkine(self, angular_pose):
+
         # Check the angular pose
         if not self.check_angle(angular_pose):
             raise ValueError
@@ -207,15 +305,6 @@ class RRRSolver(KinematicSolver):
         return x, y, z
 
     def ikine(self, cartesian_pose, config=True):
-        """
-        Inverse kinematic solver
-
-        :param cartesian_pose: The wanted cartesian position (3 dof)
-        :param config: the configuration of the result :
-                       - False : angle_2 > angle_1
-                       - True : angle_1 > angle_2
-        :return: the angles related to the cartesian pose in rad
-        """
 
         # Theta 1
         theta_1 = math.atan2(cartesian_pose[1], cartesian_pose[0])
@@ -249,35 +338,8 @@ class RRRSolver(KinematicSolver):
         else:
             return theta_1, theta_2_2, beta_2
 
-    @staticmethod
-    def __polynome(A, B, C, D, E, F, eval_pt):
-        """
-        Return a fifth degree polynome
-        :param A: coeff for 5 degree
-        :param B: coeff for 4 degree
-        :param C: coeff for 3 degree
-        :param D: coeff for 2 degree
-        :param E: coeff for 1 degree
-        :param F: constante
-        :param eval_pt: the value where the polynome is evaluated
-        :return: A*(eval_pt)^5 + B*(eval_pt)^4 + C*(eval_pt)^3 + D*(eval_pt)^2 + E*(eval_pt) + F
-        """
-        A = [x * pow(eval_pt, 5) for x in A]
-        B = [x * pow(eval_pt, 4) for x in B]
-        C = [x * pow(eval_pt, 3) for x in C]
-        D = [x * pow(eval_pt, 2) for x in D]
-        E = [x * pow(eval_pt, 1) for x in E]
-        return [a + b + c + d + e + f for a, b, c, d, e, f in zip(A, B, C, D, E, F)]
+    def start_to_end_joint_trajectory(self, initial, final, number_point):
 
-    def __start_to_end_joint_trajectory(self, initial, final, number_point):
-        """
-        Generate a valid joint trajectory by using polynomial interpolation
-
-        :param initial: Initial joint pose (must be valid)
-        :param final: Final joint pose (must be valid)
-        :param number_point: The number of points for the trajectory
-        :return: A joint trajectory
-        """
         # Check the initial and the final pose
         if not self.check_angle(initial):
             raise ValueError("Initial pose is not valid")
@@ -292,20 +354,12 @@ class RRRSolver(KinematicSolver):
         trajectory = []
 
         for i in range(number_point):
-            trajectory.append(self.__polynome(A, B, C, [0, 0, 0], [0, 0, 0], initial, i))
+            trajectory.append(self.polynome(A, B, C, [0, 0, 0], [0, 0, 0], initial, i))
 
         return trajectory
 
-    def __start_to_end_linear_trajectory(self, initial, final, number_point):
-        """
-        Generate a joint trajectory by using linear cartesian interpolation
-        /!\ Singularity can occur /!\
+    def start_to_end_linear_trajectory(self, initial, final, number_point):
 
-        :param initial: Initial cartesian pose
-        :param final: Final cartesian pose
-        :param number_point: The number of points for the trajectory
-        :return: A joint trajectory based on cartesian pose
-        """
         trajectory = []
 
         init_pose = np.array(initial)
@@ -326,12 +380,7 @@ class RRRSolver(KinematicSolver):
         return trajectory
 
     def joint_trajectory(self, points, number_points):
-        """
 
-        :param points: (2x3 min) list of angle points
-        :param number_points: (>=1)The number of points for the trajectory
-        :return: a valid trajectory
-        """
         # Check points - size (2,3) min
         if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
             raise TypeError("Not the right dimension")
@@ -341,18 +390,13 @@ class RRRSolver(KinematicSolver):
         # Iterate on points
         trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
         for i in range(len(points)-1):
-            trajectory[i*number_points:(i+1)*number_points, :] = self.__start_to_end_joint_trajectory(points[i][:], points[i+1][:], number_points)
+            trajectory[i*number_points:(i+1)*number_points, :] = self.start_to_end_joint_trajectory(points[i][:], points[i+1][:], number_points)
 
         # Return the trajectory
         return trajectory
 
     def linear_trajectory(self, points, number_points):
-        """
 
-        :param points: (2x3 min) list of cartesian points
-        :param number_points: (>=1)The number of points for the trajectory
-        :return: a valid trajectory
-        """
         # Check points - size (2,3) min
         if np.shape(points)[0] < 2 or np.shape(points)[1] is not 3:
             raise TypeError("Not the right dimension")
@@ -363,32 +407,12 @@ class RRRSolver(KinematicSolver):
         trajectory = np.zeros((number_points*(np.shape(points)[0]-1), np.shape(points)[1]))
 
         for i in range(len(points)-1):
-            trajectory[i*number_points:(i+1)*number_points, :] = self.__start_to_end_linear_trajectory(points[i][:], points[i+1][:], number_points)
+            trajectory[i*number_points:(i+1)*number_points, :] = self.start_to_end_linear_trajectory(points[i][:], points[i+1][:], number_points)
 
         # Return the trajectory
         return trajectory
 
-    @staticmethod
-    def show_angle(traj):
-        """
-
-        :param traj: a valid trajectory (list of 3D lists)
-        :return: show the angles
-        """
-        trajectory = np.array(traj)
-        for i in range(0, np.shape(traj)[1]):
-            plt.plot(range(len(traj)), trajectory[:, i], label=["$\theta_{0}$".format(i)])
-        plt.legend(shadow=True)
-        plt.show()
-
     def animate_2d_trajectory(self, traj, record=False, file_name='animation.mp4'):
-        """
-
-        :param traj: A valid trajectory
-        :param record: True if the animation is recorded. False (by default) otherwise
-        :param file_name:
-        :return:
-        """
         # ------------------------------------------------------------
         # set up figure and animation
         fig = plt.figure()
@@ -432,14 +456,7 @@ class RRRSolver(KinematicSolver):
         plt.show()
 
     def animate_3d_trajectory(self, traj, record=False, file_name='3d_animation.mp4'):
-        """
-        Animate a 3D trajectory and can save it into mp4 file
 
-        :param traj: A valid trajectory
-        :param record: True if the animation is recorded. False (by default) otherwise
-        :param file_name:
-        :return: an animation of the trajectory in 3D
-        """
         # Attaching 3D axis to the figure
         fig = plt.figure()
         ax = p3.Axes3D(fig)
@@ -503,9 +520,13 @@ class RRRSolver(KinematicSolver):
 
 if __name__ == '__main__':
     # Do some tests
-    kine_solver = RRRSolver(1, 1, 1, [-3.14, 3.14], [-3.14, 3.14], [-3.14, 3.14])
+    kine_solver = RRRSolver(1, 1, 1, [-180., 180.], [80., 150.], [80., 135])
+
+    # Calibration
+    kine_solver.calibration([0, 180., 110.], [1, -1, -1], [-180., 180.], [80., 150.], [80., 135])
 
     # Show an inverse calculation
+    """
     init_pose_angle = [0., math.pi/4, 0.]
     print('Initial configuration - angle ', init_pose_angle)
     init_pose_cart = kine_solver.fkine(init_pose_angle)
@@ -519,21 +540,28 @@ if __name__ == '__main__':
     print('Final configuration - angle ', end_pose_angle)
     end_pose_cart = kine_solver.fkine(end_pose_angle)
     print('Final configuration - cartesian ', end_pose_cart)
+    """
 
     # Rectangle
-    pts_1 = [1., 0, 1.75]
-    pts_2 = [1., 0, 2.25]
-    pts_3 = [1.5, 0, 2.25]
-    pts_4 = [1.5, 0, 1.75]
+    pts_1 = [1.2, 0, 1.5]
+    pts_2 = [1., 0, 2.]
+    pts_3 = [1.25, 0, 2.]
+    pts_4 = [1.25, 0, 1.5]
 
-    pt_1 = kine_solver.ikine(pts_1)
-    pt_2 = kine_solver.ikine(pts_2)
-    pt_3 = kine_solver.ikine(pts_3)
-    pt_4 = kine_solver.ikine(pts_4)
+    #pt_1 = kine_solver.to_solver_coordinate([0, 150., 100.])
+    #pt_2 = kine_solver.to_solver_coordinate([0, 100., 110.])
+    pt_1 = [0., math.pi/3, -math.pi/8]
+    pt_2 = [0., math.pi/2, math.pi/8]
+    print(kine_solver.to_device_coordinate(pt_1))
+
+    #pt_1 = kine_solver.ikine(pts_1)
+    #pt_2 = kine_solver.ikine(pts_2)
+    #pt_3 = kine_solver.ikine(pts_3)
+    #pt_4 = kine_solver.ikine(pts_4)
 
     # Show a joint trajectory
-    traj = kine_solver.joint_trajectory([pt_1, pt_2, pt_3, pt_4, pt_1], 100)
-    kine_solver.show_angle(traj)
+    traj = kine_solver.joint_trajectory([pt_1, pt_2, pt_1], 100)
+    #kine_solver.show_angle(traj)
     kine_solver.animate_2d_trajectory(traj)
 
 
