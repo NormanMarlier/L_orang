@@ -442,10 +442,12 @@ class RRRSolver(KinematicSolver):
         # ------------------------------------------------------------
         # set up figure and animation
         fig = plt.figure()
-        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False, xlim=(-3, 3), ylim=(-3, 3))
+        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False, xlim=(-.5, .5), ylim=(-.5, .5))
         ax.grid()
 
-        line1, = ax.plot([], [], '-o', lw=2)
+        self.show_cartesian_space(False)
+
+        line1, = ax.plot([], [], 'k-o', lw=2)
         line2, = ax.plot([], [], 'r-', lw=2)
         x_traj = []
         y_traj = []
@@ -575,20 +577,18 @@ class RRRSolver(KinematicSolver):
 
 if __name__ == '__main__':
     # Do some tests
-    kine_solver = RRRSolver(1, 1, 1, [-180., 180.], [0., 180.], [0., 180])
+    kine_solver = RRRSolver(0.095, 0.15, 0.15, [-180., 180.], [0., 180.], [0., 180])
 
     # Calibration
     kine_solver.calibration([0, 180., 110.], [1, -1, -1], [-180., 180.], [80., 150.], [80., 135])
 
     # Rectangle
-    pts_1 = [1.3, 0, 1.7]
-    pts_2 = [.9, 0, 2]
-    pts_3 = [1.25, 0, 2.]
-    pts_4 = [1.25, 0, 1.7]
+    pts_1 = [0.2, 0, 0.17]
+    pts_2 = [0.25, 0, 0.2]
+    pts_3 = [0.2, 0, 0.2]
+    pts_4 = [.25, 0, 0.17]
 
-    kine_solver.show_cartesian_space()
-
-    #kine_solver.show_points([pts_1, pts_2, pts_3, pts_4])
+    kine_solver.show_points([pts_1, pts_2, pts_3, pts_4])
 
     # Limits
     #lim_theta_1 = kine_solver.to_solver_coordinate([0, 80, 80])
@@ -603,8 +603,8 @@ if __name__ == '__main__':
 
 
     # Show a joint trajectory
-    #traj = kine_solver.linear_trajectory([pts_4, pts_2, pts_3, pts_1, pts_4], 100)
-    #kine_solver.animate_2d_trajectory(traj)
+    traj = kine_solver.linear_trajectory([pts_4, pts_2, pts_3, pts_1, pts_4], 100)
+    kine_solver.animate_2d_trajectory(traj)
     #pt_1 = kine_solver.ikine(pts_1)
     #pt_2 = kine_solver.ikine(pts_2)
     #pt_3 = kine_solver.ikine(pts_3)
