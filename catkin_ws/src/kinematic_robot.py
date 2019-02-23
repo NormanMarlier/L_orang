@@ -327,7 +327,7 @@ class RRRSolver(KinematicSolver):
 
         return x, y, z
 
-    def ikine(self, cartesian_pose, config=True):
+    def ikine(self, cartesian_pose, config=0):
 
         # Theta 1
         theta_1 = math.atan2(cartesian_pose[1], cartesian_pose[0])
@@ -349,17 +349,26 @@ class RRRSolver(KinematicSolver):
         theta_2_1 = math.atan2(2 * t_alpha_1 / (1 + pow(t_alpha_1, 2)), (1 - pow(t_alpha_1, 2)) / (1 + pow(t_alpha_1, 2)))
         theta_2_2 = math.atan2(2 * t_alpha_2 / (1 + pow(t_alpha_2, 2)), (1 - pow(t_alpha_2, 2)) / (1 + pow(t_alpha_2, 2)))
 
+        final_pose = [theta_1, theta_2_1, beta_1]
         # Check the angular poses
-        if not self.check_angle([theta_1, theta_2_1, beta_1]) and config:
-            raise ValueError("Configuration 1 can't be achieved")
-        if not self.check_angle([theta_1, theta_2_2, beta_2]) and (not config):
-            raise ValueError("Configuration 2 can't be achieved")
+        if config == 0:
+            if not self.check_angle(final_pose):
+                final_pose = [theta_1, theta_2_2, beta_2]
+                if not self.check_angle(final_pose):
+                    print (final_pose, self.born_2_min, self.born_2_max, self.born_3_min, self.born_3_max)
+                    raise ValueError("Configuration 1 and 2 can't be achieved")
+            return final_pose 
+        
+        if config == 1:
+            if not self.check_angle([theta_1, theta_2_1, beta_1]):
+                raise ValueError("Configuration 1 can't be achieved")
+            else: return [theta_1, theta_2_1, beta_1]
 
-        if config:
-            return theta_1, theta_2_1, beta_1
+        if config == 2:
+            if not self.check_angle([theta_1, theta_2_1, beta_1]) and config == 1:
+                raise ValueError("Configuration 1 can't be achieved")
+            else: return theta_1, theta_2_2, beta_2
 
-        else:
-            return theta_1, theta_2_2, beta_2
 
     def start_to_end_joint_trajectory(self, initial, final, number_point):
 
@@ -396,6 +405,7 @@ class RRRSolver(KinematicSolver):
             try:
                 new_point = self.ikine(list(x))
             except ValueError:
+                self.animate_2d_trajectory(trajectory)
                 raise ValueError
             else:
                 trajectory.append(new_point)
@@ -580,10 +590,10 @@ if __name__ == '__main__':
     kine_solver.calibration([0, 180., 110.], [1, -1, -1], [-180., 180.], [80., 150.], [80., 135])
 
     # Rectangle
-    pts_1 = [0.2, 0, 0.17]
-    pts_2 = [0.25, 0, 0.2]
-    pts_3 = [0.2, 0, 0.2]
-    pts_4 = [.25, 0, 0.17]
+    pts_1 = [0.14, 0, 0.2]
+    pts_2 = [0.22, 0, 0.25]
+    pts_3 = [0.14, 0, 0.25]
+    pts_4 = [.22, 0, 0.2]
 
     kine_solver.show_points([pts_1, pts_2, pts_3, pts_4])
 
@@ -600,7 +610,7 @@ if __name__ == '__main__':
 
 
     # Show a joint trajectory
-    traj = kine_solver.linear_trajectory([pts_4, pts_2, pts_3, pts_1, pts_4], 100)
+    traj = kine_solver.linear_trajectory([pts_1, pts_3, pts_2, pts_4, pts_1], 10)
     kine_solver.animate_2d_trajectory(traj)
     #pt_1 = kine_solver.ikine(pts_1)
     #pt_2 = kine_solver.ikine(pts_2)
