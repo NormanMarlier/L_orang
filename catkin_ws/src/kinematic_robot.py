@@ -1,8 +1,6 @@
 import math
 import abc
 import numpy as np
-
-from scipy.spatial import ConvexHull
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import mpl_toolkits.mplot3d.axes3d as p3
