@@ -9,9 +9,9 @@ import mpl_toolkits.mplot3d.axes3d as p3
 # This solver is based on geometrical features such as the distances between
 # two joints.
 # KinematicSolver is an abstract class. Different solvers can be derived from it
+ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()}) # compatible with Python2 and 3
 
-
-class KinematicSolver(abc.ABC):
+class KinematicSolver(ABC):
 
     @abc.abstractmethod
     def check_angle(self, angular_pose):
