@@ -235,7 +235,6 @@ class RRRSolver(KinematicSolver):
                 self.domain_z.append(self.__L1 + self.__L2 * math.sin(angle_1) + self.__L3 * math.sin(angle_2))
         self.cartesian_domain = np.array([self.domain_r, self.domain_z]).T
 
-
     def check_angle(self, angular_pose):
 
         if angular_pose[0] > self.born_1_max or angular_pose[0] < self.born_1_min:
