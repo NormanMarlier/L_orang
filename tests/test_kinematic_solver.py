@@ -52,13 +52,13 @@ class TestRRRSolver:
         self.solver = RRRSolver(1, 1, 1, [-10, 360], [-10, 360], [-10, 360])
 
         with pytest.raises(ValueError):
-            self.solver.calibration([0, 0, 0], [1, 1, 0])
+            self.solver.calibration([0, 0, 0], [1, 1, 0], [0, 180], [0, 180], [0, 180])
 
     def test_calibration_2(self):
         self.solver = RRRSolver(1, 1, 1, [-10, 360], [-10, 360], [-10, 360])
 
         with pytest.raises(ValueError):
-            self.solver.calibration([0, 0, 0], [0, 0, -1])
+            self.solver.calibration([0, 0, 0], [0, 0, -1], [0, 180], [0, 180], [0, 180])
 
     def test_fkine(self):
         # Test one case that is good
