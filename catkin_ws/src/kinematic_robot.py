@@ -1,11 +1,13 @@
 import math
 import abc
 import numpy as np
+
+from scipy.spatial import ConvexHull
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import mpl_toolkits.mplot3d.axes3d as p3
 
-# This class represents a kinematic solver (no dynamic equations)
+# This class represents a implementation of a kinematic solver (no dynamic equations)
 # This solver is based on geometrical features such as the distances between
 # two joints.
 # KinematicSolver is an abstract class. Different solvers can be derived from it
@@ -180,6 +182,7 @@ class KinematicSolver(abc.ABC):
 #
 # Example for Lorang :
 # Lorang - born_2 (-10, 120)
+# L1 =0.095, L2 = 0.15, L3 = 0.15
 
 
 class RRRSolver(KinematicSolver):
@@ -206,6 +209,7 @@ class RRRSolver(KinematicSolver):
         self.__L1 = l1
         self.__L2 = l2
         self.__L3 = l3
+
         # Born
         self.born_1_min = math.radians(born_1[0])
         self.born_1_max = math.radians(born_1[1])
@@ -213,6 +217,7 @@ class RRRSolver(KinematicSolver):
         self.born_2_max = math.radians(born_2[1])
         self.born_3_min = math.radians(born_3[0])
         self.born_3_max = math.radians(born_3[1])
+
         # Solver system coordinate parameters
         self.__delta_1 = 0
         self.__delta_2 = 0
@@ -220,6 +225,16 @@ class RRRSolver(KinematicSolver):
         self.__rate_1 = 1
         self.__rate_2 = 1
         self.__rate_3 = 1
+
+        # Cartesian space
+        self.domain_r = []
+        self.domain_z = []
+        for angle_1 in np.linspace(self.born_2_min, self.born_2_max, 1000, endpoint=True):
+            for angle_2 in np.linspace(self.born_3_min, self.born_3_max, 1000, endpoint=True):
+                self.domain_r.append(self.__L2 * math.cos(angle_1) + self.__L3 * math.cos(angle_2))
+                self.domain_z.append(self.__L1 + self.__L2 * math.sin(angle_1) + self.__L3 * math.sin(angle_2))
+        self.cartesian_domain = np.array([self.domain_r, self.domain_z]).T
+
 
     def check_angle(self, angular_pose):
 
@@ -275,6 +290,16 @@ class RRRSolver(KinematicSolver):
             self.born_3_min = self.born_3_max
             self.born_3_max =tmp
 
+        # Update cartesian space
+        self.domain_r = []
+        self.domain_z = []
+        for angle_1 in np.linspace(self.born_2_min, self.born_2_max, 1000, endpoint=True):
+            for angle_2 in np.linspace(self.born_3_min, self.born_3_max, 1000, endpoint=True):
+                self.domain_r.append(self.__L2 * math.cos(angle_1) + self.__L3 * math.cos(angle_2))
+                self.domain_z.append(self.__L1 + self.__L2 * math.sin(angle_1) + self.__L3 * math.sin(angle_2))
+
+        self.cartesian_domain = np.array([self.domain_r, self.domain_z]).T
+
     def to_device_coordinate(self, solver_pose):
 
         dof_1 = self.__rate_1 * math.degrees(solver_pose[0]) - self.__rate_1 * self.__delta_1
@@ -293,14 +318,15 @@ class RRRSolver(KinematicSolver):
 
     def fkine(self, angular_pose):
 
-        # Check the angular pose
+        # Check the angular pose and show the point if not
         if not self.check_angle(angular_pose):
-            raise ValueError
+            raise ValueError('The initial position is not possible')
 
         # Compute the cartesian coordinates
         x = math.cos(angular_pose[0]) * (self.__L2 * math.cos(angular_pose[1]) + self.__L3 * math.cos(angular_pose[2]))
         y = math.sin(angular_pose[0]) * (self.__L2 * math.cos(angular_pose[1]) + self.__L3 * math.cos(angular_pose[2]))
         z = self.__L1 + self.__L2 * math.sin(angular_pose[1]) + self.__L3 * math.sin(angular_pose[2])
+
 
         return x, y, z
 
@@ -328,9 +354,9 @@ class RRRSolver(KinematicSolver):
 
         # Check the angular poses
         if not self.check_angle([theta_1, theta_2_1, beta_1]) and config:
-            raise ValueError("Configuration 1 is not ok")
+            raise ValueError("Configuration 1 can't be achieved")
         if not self.check_angle([theta_1, theta_2_2, beta_2]) and (not config):
-            raise ValueError("Configuration 2 is not ok")
+            raise ValueError("Configuration 2 can't be achieved")
 
         if config:
             return theta_1, theta_2_1, beta_1
@@ -518,51 +544,73 @@ class RRRSolver(KinematicSolver):
 
         plt.show()
 
+    def show_cartesian_space(self, show=True):
+        """
+        Show in blue the cartesian space
+        :return:
+        """
+        plt.plot(self.cartesian_domain[:, 0], self.cartesian_domain[:, 1])
+        if show:
+            plt.show()
+
+    def show_points(self, points):
+        """
+        Show point(s) in red with respect to the cartesian space of the Solver
+        :param points: a no-empty list of 3D points (x, y, z)
+        :return: plot the points
+        """
+        #  and Z axis
+        r_points = []
+        z_points = []
+
+        # TODO : no loop
+        for i in range(len(points)):
+            r_points.append(math.sqrt(points[i][0]**2 + points[i][1]**2))
+            z_points.append(points[i][2])
+
+        self.show_cartesian_space(show=False)
+        plt.plot(r_points, z_points, 'ro')
+        plt.show()
+
+
 if __name__ == '__main__':
     # Do some tests
-    kine_solver = RRRSolver(1, 1, 1, [-180., 180.], [80., 150.], [80., 135])
+    kine_solver = RRRSolver(1, 1, 1, [-180., 180.], [0., 180.], [0., 180])
 
     # Calibration
     kine_solver.calibration([0, 180., 110.], [1, -1, -1], [-180., 180.], [80., 150.], [80., 135])
 
-    # Show an inverse calculation
-    """
-    init_pose_angle = [0., math.pi/4, 0.]
-    print('Initial configuration - angle ', init_pose_angle)
-    init_pose_cart = kine_solver.fkine(init_pose_angle)
-    print('Initial configuration - cartesian ', init_pose_cart)
-    intermediate_pose_angle_1 = [0., math.pi/3, math.pi/4]
-    intermediate_pose_cart_1 = kine_solver.fkine(intermediate_pose_angle_1)
-
-    intermediate_pose_angle_2 = [0., math.pi / 2, math.pi / 4]
-    intermediate_pose_cart_2 = kine_solver.fkine(intermediate_pose_angle_2)
-    end_pose_angle = [0., math.pi/4, math.pi/4]
-    print('Final configuration - angle ', end_pose_angle)
-    end_pose_cart = kine_solver.fkine(end_pose_angle)
-    print('Final configuration - cartesian ', end_pose_cart)
-    """
-
     # Rectangle
-    pts_1 = [1.2, 0, 1.5]
-    pts_2 = [1., 0, 2.]
+    pts_1 = [1.3, 0, 1.7]
+    pts_2 = [.9, 0, 2]
     pts_3 = [1.25, 0, 2.]
-    pts_4 = [1.25, 0, 1.5]
+    pts_4 = [1.25, 0, 1.7]
 
+    kine_solver.show_cartesian_space()
+
+    #kine_solver.show_points([pts_1, pts_2, pts_3, pts_4])
+
+    # Limits
+    #lim_theta_1 = kine_solver.to_solver_coordinate([0, 80, 80])
+    #lim_theta_2 = kine_solver.to_solver_coordinate([0, 150, 135])
+    #print(lim_theta_1)
+    #print(lim_theta_2)
     #pt_1 = kine_solver.to_solver_coordinate([0, 150., 100.])
     #pt_2 = kine_solver.to_solver_coordinate([0, 100., 110.])
-    pt_1 = [0., math.pi/3, -math.pi/8]
-    pt_2 = [0., math.pi/2, math.pi/8]
-    print(kine_solver.to_device_coordinate(pt_1))
+    #pt_1 = [0., math.pi/3, -math.pi/8]
+    #pt_2 = [0., math.pi/2, math.pi/8]
+    # Try inverse kinematic
 
+
+    # Show a joint trajectory
+    #traj = kine_solver.linear_trajectory([pts_4, pts_2, pts_3, pts_1, pts_4], 100)
+    #kine_solver.animate_2d_trajectory(traj)
     #pt_1 = kine_solver.ikine(pts_1)
     #pt_2 = kine_solver.ikine(pts_2)
     #pt_3 = kine_solver.ikine(pts_3)
     #pt_4 = kine_solver.ikine(pts_4)
 
-    # Show a joint trajectory
-    traj = kine_solver.joint_trajectory([pt_1, pt_2, pt_1], 100)
-    #kine_solver.show_angle(traj)
-    kine_solver.animate_2d_trajectory(traj)
+
 
 
 
