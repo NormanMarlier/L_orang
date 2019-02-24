@@ -7,24 +7,21 @@
 
 # Import module
 import rospy
-from std_msgs.msg import Float32MultiArray
-
 from kinematic_robot import RRRSolver
-
+from robot_controller import RobotController
 
 
 def talker():
     # ROS
-    pub = rospy.Publisher('controller-lorang', Float32MultiArray, queue_size=10)
     rospy.init_node('controller-talker-lorang', anonymous=True)
-    rate = rospy.Rate(5) # 20Hz = 50ms
-    cmd_motors = Float32MultiArray()
-    print "ROS starts : ok"
+    rate = rospy.Rate(5)  # 1Hz = 1s
+
+    # Robot Controller
+    robot = RobotController()
  
     # Kinematic solver
     kine_solver = RRRSolver(0.095, 0.15, 0.15, [-180., 180.], [0., 180.], [0., 180.])
     kine_solver.calibration([0., 180., 110.], [1, -1, -1], [-180., 180.], [80., 150.], [80., 135.])
-    print "Kinematic solver ok"
     
     # Rectangle
     pts_1 = [0.14, 0, 0.2]
@@ -35,20 +32,15 @@ def talker():
     # Compute trajectory
     traj = kine_solver.linear_trajectory([pts_1, pts_3, pts_2, pts_4, pts_1], 20)
     counter = 0
-    print "Trajectory ok, length : ", len(traj)
-    print "Start main loop..."
 
     while not rospy.is_shutdown():
-        print "counter = ", counter
-        # Get the angles
-        cmd_motors.data = kine_solver.to_device_coordinate(traj[counter])
-        print "cmd_motors : ", cmd_motors.data
+        # Publish the angles
+        robot.move_to(traj[counter])
+
         counter += 1
         if counter >= len(traj):
             counter = len(traj) - 1
 
-        # Publish the angles
-        pub.publish(cmd_motors)
         rate.sleep()
 
 
