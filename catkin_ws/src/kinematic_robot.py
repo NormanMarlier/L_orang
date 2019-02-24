@@ -357,17 +357,17 @@ class RRRSolver(KinematicSolver):
                 if not self.check_angle(final_pose):
                     print (final_pose, self.born_2_min, self.born_2_max, self.born_3_min, self.born_3_max)
                     raise ValueError("Configuration 1 and 2 can't be achieved")
-            return final_pose 
+            return tuple(final_pose)
         
         if config == 1:
             if not self.check_angle([theta_1, theta_2_1, beta_1]):
                 raise ValueError("Configuration 1 can't be achieved")
-            else: return [theta_1, theta_2_1, beta_1]
+            else: return (theta_1, theta_2_1, beta_1)
 
         if config == 2:
             if not self.check_angle([theta_1, theta_2_1, beta_1]) and config == 1:
                 raise ValueError("Configuration 1 can't be achieved")
-            else: return theta_1, theta_2_2, beta_2
+            else: return (theta_1, theta_2_2, beta_2)
 
 
     def start_to_end_joint_trajectory(self, initial, final, number_point):
