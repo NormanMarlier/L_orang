@@ -18,7 +18,7 @@ I add hardware in order to control the robotic arm and interact with the environ
 Communication between the Raspberry Pi board and the Arduino board is done by using the middleware [ROS Kinetic](http://www.ros.org/).
 
 # Result
-Some images of my beautiful robot, Lorang
+Some images of Lorang
 
 ![Lorang_1](../master/Lorang_1.jpg)
 
