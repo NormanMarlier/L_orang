@@ -1,6 +1,5 @@
 # Lorang  [![Build Status](https://travis-ci.com/NormanMarlier/Lorang.svg?branch=master)](https://travis-ci.com/NormanMarlier/Lorang)
-Lorang is a 3D-printing robotic arm made of PLA which integrates quite complex software with Arduino as controller and a Raspberry Pi as mind.  
-Fun fact : The name "Lorang" comes from its long arm and the color of the original model : orange. (L'orang-outan is the french name of Orangutan)
+Lorang is a 3D-printing robotic arm made of PLA which integrates a low-level controller in Arduino board and a high-level controller in a Raspberry Pi.  
 
 
 
